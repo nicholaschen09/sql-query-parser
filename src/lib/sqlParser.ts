@@ -18,6 +18,7 @@ export class SQLParser {
             .replace(/\)/g, ' ) ')
             .replace(/,/g, ' , ')
             .split(/\s+/)
+            .map(token => token.replace(/;$/, ''))
             .filter(token => token.length > 0);
     }
 
@@ -75,23 +76,31 @@ export class SQLParser {
         return columns;
     }
 
-    // Recursive descent parser for conditions
+    // Parse OR (lowest precedence)
     private parseConditionRecursive(tokens: string[], idx: number): [Condition, number] {
-        let [left, nextIdx] = this.parseOperand(tokens, idx);
-        while (nextIdx < tokens.length) {
-            const op = tokens[nextIdx]?.toUpperCase();
-            if (op === 'AND' || op === 'OR') {
-                const operator = op as Operator;
-                const [right, afterRight] = this.parseOperand(tokens, nextIdx + 1);
-                left = { left, operator, right };
-                nextIdx = afterRight;
-            } else {
-                break;
-            }
+        let [left, nextIdx] = this.parseAnd(tokens, idx);
+        while (nextIdx < tokens.length && tokens[nextIdx]?.toUpperCase() === 'OR') {
+            const operator = tokens[nextIdx].toUpperCase() as Operator;
+            const [right, afterRight] = this.parseAnd(tokens, nextIdx + 1);
+            left = { left, operator, right };
+            nextIdx = afterRight;
         }
         return [left, nextIdx];
     }
 
+    // Parse AND (higher precedence)
+    private parseAnd(tokens: string[], idx: number): [Condition, number] {
+        let [left, nextIdx] = this.parseOperand(tokens, idx);
+        while (nextIdx < tokens.length && tokens[nextIdx]?.toUpperCase() === 'AND') {
+            const operator = tokens[nextIdx].toUpperCase() as Operator;
+            const [right, afterRight] = this.parseOperand(tokens, nextIdx + 1);
+            left = { left, operator, right };
+            nextIdx = afterRight;
+        }
+        return [left, nextIdx];
+    }
+
+    // Parse a single operand or parenthesized expression
     private parseOperand(tokens: string[], idx: number): [Condition, number] {
         if (tokens[idx] === '(') {
             const [cond, nextIdx] = this.parseConditionRecursive(tokens, idx + 1);
