@@ -37,7 +37,7 @@ npm run dev
 ## Example Queries
 
 ```sql
-SELECT state FROM table WHERE pop > 1000000 AND state != 'California';
+4
 SELECT * FROM table WHERE pop > 1000000000 OR (pop > 1000000 AND region = 'Midwest');
 SELECT * FROM table WHERE pop_male > pop_female;
 ```

@@ -1,7 +1,8 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import "../app.css";
-    import type { QueryResult, QueryHistory } from "$lib/types/types";
+    import { SQLParser } from "$lib/parser/sql-parser";
+    import type { QueryResult, QueryHistory, Row } from "$lib/types/types";
 
     let query = "";
     let result: QueryResult | null = null;
@@ -9,6 +10,9 @@
     let loading = false;
     let queryTime: number | null = null;
     let nextId = 1;
+    let jsonInput = "";
+    let data: Row[] = [];
+    let jsonError: string | null = null;
 
     function saveHistory() {
         sessionStorage.setItem("queryHistory", JSON.stringify(history));
@@ -22,34 +26,54 @@
         nextId = n ? parseInt(n) : 1;
     }
 
-    async function executeQuery() {
+    function handleFileChange(event: Event) {
+        const file = (event.target as HTMLInputElement).files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                jsonInput = e.target?.result as string;
+                try {
+                    data = JSON.parse(jsonInput);
+                    jsonError = null;
+                } catch (err) {
+                    jsonError = "Invalid JSON file.";
+                    data = [];
+                }
+            };
+            reader.readAsText(file);
+        }
+    }
+
+    function executeQuery() {
         if (!query.trim()) return;
+        if (!data.length) {
+            result = { success: false, error: "No JSON data loaded." };
+            return;
+        }
         loading = true;
         queryTime = null;
         const start = performance.now();
         try {
-            const response = await fetch("http://localhost:3000/api/query", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ query }),
-            });
-            result = await response.json();
+            const parser = new SQLParser(data);
+            const parsed = parser.parse(query);
+            const res = parser.execute(parsed);
+            result = { success: true, data: res };
             queryTime = Math.round(performance.now() - start);
-            // Add to session history
-            const newHistory: QueryHistory = {
-                id: nextId++,
-                query,
-                result: result as QueryResult,
-                timestamp: new Date().toISOString(),
-            };
-            history = [newHistory, ...history];
-            saveHistory();
-        } catch (error) {
+        } catch (error: any) {
             result = {
                 success: false,
-                error: "Failed to execute query",
+                error: error.message || "Failed to execute query",
             };
         }
+        // Add to session history
+        const newHistory: QueryHistory = {
+            id: nextId++,
+            query,
+            result: result as QueryResult,
+            timestamp: new Date().toISOString(),
+        };
+        history = [newHistory, ...history];
+        saveHistory();
         loading = false;
     }
 
@@ -72,6 +96,34 @@
 
 <main class="container">
     <h1>SQL Query Parser</h1>
+
+    <div class="json-input-section">
+        <label>Upload JSON file:</label>
+        <input
+            type="file"
+            accept=".json,application/json"
+            on:change={handleFileChange}
+            class="json-file-input"
+        />
+        {#if jsonError}
+            <div class="error">{jsonError}</div>
+        {/if}
+        <textarea
+            bind:value={jsonInput}
+            placeholder="Or paste JSON data here..."
+            rows="6"
+            class="json-textarea"
+            on:input={() => {
+                try {
+                    data = JSON.parse(jsonInput);
+                    jsonError = null;
+                } catch (err) {
+                    jsonError = "Invalid JSON input.";
+                    data = [];
+                }
+            }}
+        ></textarea>
+    </div>
 
     <div class="query-section">
         <textarea
@@ -340,5 +392,15 @@
         color: #222;
         font-size: 1.05rem;
         margin-bottom: 0.5rem;
+    }
+    .json-input-section {
+        margin-bottom: 2rem;
+    }
+    .json-file-input {
+        margin-bottom: 1rem;
+        display: block;
+    }
+    .json-textarea {
+        margin-top: 0.5rem;
     }
 </style>

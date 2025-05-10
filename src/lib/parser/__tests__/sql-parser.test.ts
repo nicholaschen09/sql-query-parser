@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { SQLParser } from '../sqlParser';
+import { SQLParser } from '../sql-parser';
 import type { Row } from '../../types/types';
 
 const data: Row[] = [
