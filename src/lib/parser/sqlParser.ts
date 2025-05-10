@@ -1,4 +1,4 @@
-import type { Row, SelectQuery, Condition, Operator } from './types';
+import type { Row, SelectQuery, Condition, Operator } from '../types/types';
 
 export class SQLParser {
     private data: Row[];

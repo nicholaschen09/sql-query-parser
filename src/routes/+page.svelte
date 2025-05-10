@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import "../app.css";
-    import type { QueryResult, QueryHistory } from "$lib/types";
+    import type { QueryResult, QueryHistory } from "$lib/types/types";
 
     let query = "";
     let result: QueryResult | null = null;

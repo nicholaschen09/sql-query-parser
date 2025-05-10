@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { SQLParser } from '../sqlParser';
-import type { Row } from '../types';
+import type { Row } from '../../types/types';
 
 const data: Row[] = [
     { state: 'California', region: 'West', pop: 10000, pop_male: 6000, pop_female: 4000 },

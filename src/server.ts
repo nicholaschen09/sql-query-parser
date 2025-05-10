@@ -2,8 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import Database from 'better-sqlite3';
 import { readFileSync } from 'fs';
-import { SQLParser } from './lib/sqlParser.js';
-import type { QueryResult, QueryHistory } from './lib/types.js';
+import { SQLParser } from './lib/parser/sqlParser.js';
+import type { QueryResult, QueryHistory } from './lib/types/types.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
