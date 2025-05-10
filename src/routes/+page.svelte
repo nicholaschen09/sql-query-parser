@@ -8,6 +8,19 @@
     let history: QueryHistory[] = [];
     let loading = false;
     let queryTime: number | null = null;
+    let nextId = 1;
+
+    function saveHistory() {
+        sessionStorage.setItem("queryHistory", JSON.stringify(history));
+        sessionStorage.setItem("queryHistoryNextId", String(nextId));
+    }
+
+    function loadHistoryFromSession() {
+        const h = sessionStorage.getItem("queryHistory");
+        const n = sessionStorage.getItem("queryHistoryNextId");
+        history = h ? JSON.parse(h) : [];
+        nextId = n ? parseInt(n) : 1;
+    }
 
     async function executeQuery() {
         if (!query.trim()) return;
@@ -22,7 +35,15 @@
             });
             result = await response.json();
             queryTime = Math.round(performance.now() - start);
-            await loadHistory();
+            // Add to session history
+            const newHistory: QueryHistory = {
+                id: nextId++,
+                query,
+                result,
+                timestamp: new Date().toISOString(),
+            };
+            history = [newHistory, ...history];
+            saveHistory();
         } catch (error) {
             result = {
                 success: false,
@@ -32,28 +53,21 @@
         loading = false;
     }
 
-    async function loadHistory() {
-        try {
-            const response = await fetch("http://localhost:3000/api/history");
-            history = await response.json();
-        } catch (error) {
-            console.error("Failed to load history:", error);
-        }
-    }
-
     function clearQuery() {
         query = "";
         result = null;
         queryTime = null;
     }
 
-    async function clearHistory() {
-        // Remove all history from the backend (if endpoint exists), otherwise clear locally
+    function clearHistory() {
         history = [];
-        // Optionally, you can add a backend endpoint to clear history
+        nextId = 1;
+        saveHistory();
     }
 
-    onMount(loadHistory);
+    onMount(() => {
+        loadHistoryFromSession();
+    });
 </script>
 
 <main class="container">
