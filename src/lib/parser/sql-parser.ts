@@ -59,6 +59,9 @@ export class SQLParser {
         if (currentIndex < tokens.length && tokens[currentIndex].toUpperCase() === 'LIMIT') {
             currentIndex++;
             limit = parseInt(tokens[currentIndex]);
+            if (isNaN(limit) || limit < 0) {
+                throw new Error('LIMIT must be a non-negative integer');
+            }
         }
 
         return {
