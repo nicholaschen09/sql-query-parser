@@ -22,12 +22,7 @@ npm install
 
 ## Running the Application
 
-1. Start the backend server:
-```bash
-npm run server -- sample-data.json
-```
-
-2. In a separate terminal, start the frontend development server:
+2. In the terminal, start the development server:
 ```bash
 npm run dev
 ```
