@@ -160,7 +160,10 @@ export class SQLParser {
             // Support column-to-column and column-to-value
             const leftVal = typeof condition.left === 'string' ? (row[condition.left] ?? condition.left) : this.evaluateCondition(row, condition.left);
             let rightVal: any;
-            if (typeof condition.right === 'string' && condition.right in row) {
+            if (
+                typeof condition.right === 'string' &&
+                Object.prototype.hasOwnProperty.call(row, condition.right)
+            ) {
                 rightVal = row[condition.right];
             } else {
                 rightVal = condition.right;
