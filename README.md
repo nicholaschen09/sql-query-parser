@@ -20,7 +20,7 @@ A TypeScript implementation of a SQL query parser that can query flat JSON objec
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/nicholaschen09/sql-query-parser.git
 cd sql-query-parser
 ```
 
@@ -33,7 +33,7 @@ npm install
 
 1. Start the backend server:
 ```bash
-npm run server -- path/to/your/data.json
+npm run server -- sample-data.json
 ```
 
 2. In a separate terminal, start the frontend development server:
