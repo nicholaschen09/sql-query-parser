@@ -35,6 +35,9 @@ export class SQLParser {
 
         // Columns are everything between SELECT and FROM
         const columns = this.parseColumns(tokens, 1, fromIndex);
+        if (columns.length === 0 || (columns.length === 1 && columns[0] === '')) {
+            throw new Error('No columns specified in SELECT');
+        }
 
         // Table name is the token after FROM
         if (fromIndex + 1 >= tokens.length) {
