@@ -39,7 +39,7 @@
             const newHistory: QueryHistory = {
                 id: nextId++,
                 query,
-                result,
+                result: result as QueryResult,
                 timestamp: new Date().toISOString(),
             };
             history = [newHistory, ...history];
