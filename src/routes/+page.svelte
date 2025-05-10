@@ -118,7 +118,6 @@
         font-size: 2.5rem;
         font-weight: 700;
         margin-bottom: 2rem;
-        color: var(--primary-green);
     }
     .query-section {
         background: var(--card-bg);
