@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import "../app.css";
     import type { QueryResult, QueryHistory } from "$lib/types";
 
     let query = "";
@@ -107,86 +108,137 @@
 </main>
 
 <style>
+    /* Remove global styles now in src/app.css */
     .container {
-        max-width: 1200px;
+        max-width: 900px;
         margin: 0 auto;
         padding: 2rem;
     }
-
-    .query-section {
+    h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
         margin-bottom: 2rem;
+        color: var(--primary-green);
     }
-
+    .query-section {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: #222;
+    }
     textarea {
         width: 100%;
-        padding: 0.5rem;
+        padding: 1rem;
         margin-bottom: 1rem;
-        font-family: monospace;
+        font-family: "Fira Mono", monospace;
+        font-size: 1.1rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: #f5f5f5;
+        color: #222;
+        transition: border 0.2s;
     }
-
+    textarea:focus {
+        border: 1.5px solid var(--primary-green);
+        outline: none;
+    }
     button {
-        padding: 0.5rem 1rem;
-        background-color: #4caf50;
-        color: white;
+        padding: 0.75rem 2rem;
+        background-color: var(--primary-green);
+        color: #fff;
         border: none;
-        border-radius: 4px;
+        border-radius: 6px;
+        font-size: 1.1rem;
+        font-weight: 600;
         cursor: pointer;
+        transition:
+            background 0.2s,
+            box-shadow 0.2s;
+        box-shadow: 0 2px 8px rgba(0, 200, 83, 0.08);
     }
-
     button:disabled {
-        background-color: #cccccc;
+        background-color: #bdbdbd;
+        cursor: not-allowed;
     }
-
+    button:hover:not(:disabled) {
+        background-color: var(--primary-green-dark);
+    }
     .result-section {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        padding: 2rem;
         margin-bottom: 2rem;
+        color: #222;
     }
-
     table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 1rem;
+        background: var(--card-bg);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
     }
-
     th,
     td {
-        border: 1px solid #ddd;
-        padding: 0.5rem;
+        border: 1px solid var(--border);
+        padding: 0.75rem 1rem;
         text-align: left;
     }
-
     th {
-        background-color: #f5f5f5;
+        background: #f5f5f5;
+        color: var(--primary-green-dark);
+        font-weight: 700;
     }
-
+    tr:nth-child(even) td {
+        background: #fafafa;
+    }
     .error {
-        color: red;
+        color: var(--error-text);
+        background: var(--error-bg);
         padding: 1rem;
-        background-color: #ffebee;
-        border-radius: 4px;
+        border-radius: 6px;
+        margin-top: 1rem;
+        font-weight: 500;
     }
-
     .history-section {
         margin-top: 2rem;
     }
-
     .history-item {
-        border: 1px solid #ddd;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        border-radius: 4px;
+        border: 1px solid var(--border);
+        background: var(--card-bg);
+        border-radius: 8px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.2rem;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+        color: #222;
     }
-
     .history-item .query {
-        font-family: monospace;
+        font-family: "Fira Mono", monospace;
         margin-bottom: 0.5rem;
+        color: var(--primary-green-dark);
+        font-size: 1.05rem;
     }
-
     .history-item .timestamp {
-        color: #666;
-        font-size: 0.9rem;
+        color: var(--text-light);
+        font-size: 0.95rem;
+        margin-bottom: 0.3rem;
     }
-
     .history-item .success {
-        color: green;
+        color: var(--success-text);
+        font-weight: 600;
+    }
+    .history-item .error {
+        color: var(--error-text);
+        background: var(--error-bg);
+        border-radius: 4px;
+        padding: 0.5rem 1rem;
+        margin-top: 0.5rem;
+        font-weight: 500;
     }
 </style>
