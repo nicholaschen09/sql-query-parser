@@ -2,15 +2,6 @@
 
 A TypeScript implementation of a SQL query parser that can query flat JSON objects. The application provides a web interface for executing SQL queries and viewing query history.
 
-## Features
-
-- Parse and execute SQL SELECT queries on JSON data
-- Support for WHERE clauses with conditions (=, !=, <, >, AND, OR)
-- Support for LIMIT clause
-- Query history tracking
-- Web interface built with SvelteKit
-- SQLite database for storing query history
-
 ## Prerequisites
 
 - Node.js (v14 or higher)
@@ -50,13 +41,6 @@ SELECT state FROM table WHERE pop > 1000000 AND state != 'California';
 SELECT * FROM table WHERE pop > 1000000000 OR (pop > 1000000 AND region = 'Midwest');
 SELECT * FROM table WHERE pop_male > pop_female;
 ```
-
-## Project Structure
-
-- `src/lib/types.ts` - TypeScript type definitions
-- `src/lib/sqlParser.ts` - SQL parser implementation
-- `src/server.ts` - Express backend server
-- `src/routes/+page.svelte` - SvelteKit frontend page
 
 ## Limitations
 
