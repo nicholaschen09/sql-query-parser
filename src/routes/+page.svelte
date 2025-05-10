@@ -7,11 +7,13 @@
     let result: QueryResult | null = null;
     let history: QueryHistory[] = [];
     let loading = false;
+    let queryTime: number | null = null;
 
     async function executeQuery() {
         if (!query.trim()) return;
-
         loading = true;
+        queryTime = null;
+        const start = performance.now();
         try {
             const response = await fetch("http://localhost:3000/api/query", {
                 method: "POST",
@@ -19,6 +21,7 @@
                 body: JSON.stringify({ query }),
             });
             result = await response.json();
+            queryTime = Math.round(performance.now() - start);
             await loadHistory();
         } catch (error) {
             result = {
@@ -38,6 +41,18 @@
         }
     }
 
+    function clearQuery() {
+        query = "";
+        result = null;
+        queryTime = null;
+    }
+
+    async function clearHistory() {
+        // Remove all history from the backend (if endpoint exists), otherwise clear locally
+        history = [];
+        // Optionally, you can add a backend endpoint to clear history
+    }
+
     onMount(loadHistory);
 </script>
 
@@ -50,9 +65,23 @@
             placeholder="Enter your SQL query here..."
             rows="4"
         ></textarea>
-        <button on:click={executeQuery} disabled={loading}>
-            {loading ? "Executing..." : "Execute Query"}
-        </button>
+        <div class="query-actions">
+            <button on:click={executeQuery} disabled={loading}>
+                {#if loading}
+                    <span class="spinner"></span> Executing...
+                {:else}
+                    Execute Query
+                {/if}
+            </button>
+            <button class="clear-btn" on:click={clearQuery} disabled={loading}
+                >Clear Query</button
+            >
+            <button
+                class="clear-btn"
+                on:click={clearHistory}
+                disabled={loading || history.length === 0}>Clear History</button
+            >
+        </div>
     </div>
 
     {#if result}
@@ -60,6 +89,16 @@
             <h2>Result</h2>
             {#if result.success}
                 {#if result.data && result.data.length > 0}
+                    <div class="result-meta">
+                        <span
+                            >{result.data.length} row{result.data.length === 1
+                                ? ""
+                                : "s"} returned</span
+                        >
+                        {#if queryTime !== null}
+                            <span> | Query time: {queryTime} ms</span>
+                        {/if}
+                    </div>
                     <table>
                         <thead>
                             <tr>
@@ -239,5 +278,53 @@
         padding: 0.5rem 1rem;
         margin-top: 0.5rem;
         font-weight: 500;
+    }
+    .query-actions {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    .clear-btn {
+        background: #eee;
+        color: #222;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: 500;
+        padding: 0.75rem 1.5rem;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .clear-btn:disabled {
+        background: #ccc;
+        color: #888;
+        cursor: not-allowed;
+    }
+    .clear-btn:hover:not(:disabled) {
+        background: #e0e0e0;
+    }
+    .spinner {
+        display: inline-block;
+        width: 1em;
+        height: 1em;
+        border: 2.5px solid #fff;
+        border-top: 2.5px solid #00c853;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        margin-right: 0.5em;
+        vertical-align: middle;
+    }
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+    .result-meta {
+        color: #222;
+        font-size: 1.05rem;
+        margin-bottom: 0.5rem;
     }
 </style>
