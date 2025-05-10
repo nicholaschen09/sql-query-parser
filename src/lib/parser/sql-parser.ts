@@ -119,8 +119,16 @@ export class SQLParser {
         const left = tokens[idx];
         const operator = tokens[idx + 1] as Operator;
         const rightToken = tokens[idx + 2];
+
+        if (!operator || !['=', '!=', '<', '>', 'AND', 'OR'].includes(operator)) {
+            throw new Error(`Missing or invalid operator in condition near '${left}'`);
+        }
+        if (rightToken === undefined) {
+            throw new Error(`Missing right-hand side in condition near '${left} ${operator}'`);
+        }
+
         let right: string | number;
-        if (rightToken?.startsWith("'")) {
+        if (rightToken.startsWith("'")) {
             right = rightToken.slice(1, -1);
         } else if (!isNaN(Number(rightToken))) {
             right = Number(rightToken);
