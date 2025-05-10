@@ -120,11 +120,15 @@ export class SQLParser {
         const operator = tokens[idx + 1] as Operator;
         const rightToken = tokens[idx + 2];
 
-        if (!operator || !['=', '!=', '<', '>', 'AND', 'OR'].includes(operator)) {
+        const validOperators = ['=', '!=', '<', '>', 'AND', 'OR'];
+        if (!operator || !validOperators.includes(operator)) {
             throw new Error(`Missing or invalid operator in condition near '${left}'`);
         }
         if (rightToken === undefined) {
             throw new Error(`Missing right-hand side in condition near '${left} ${operator}'`);
+        }
+        if (validOperators.includes(rightToken)) {
+            throw new Error(`Unexpected operator '${rightToken}' after operator '${operator}'`);
         }
 
         let right: string | number;
