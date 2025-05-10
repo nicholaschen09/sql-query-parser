@@ -1,0 +1,37 @@
+[
+    {
+        "state": "California",
+        "region": "West",
+        "pop": 39538223,
+        "pop_male": 19538223,
+        "pop_female": 20000000
+    },
+    {
+        "state": "Texas",
+        "region": "South",
+        "pop": 29145505,
+        "pop_male": 14545505,
+        "pop_female": 14600000
+    },
+    {
+        "state": "Florida",
+        "region": "South",
+        "pop": 21538187,
+        "pop_male": 10538187,
+        "pop_female": 11000000
+    },
+    {
+        "state": "New York",
+        "region": "Northeast",
+        "pop": 20201249,
+        "pop_male": 9701249,
+        "pop_female": 10500000
+    },
+    {
+        "state": "Illinois",
+        "region": "Midwest",
+        "pop": 12812508,
+        "pop_male": 6312508,
+        "pop_female": 6500000
+    }
+]
