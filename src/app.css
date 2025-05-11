@@ -136,19 +136,26 @@ button:hover:not(:disabled),
 }
 
 .result-section {
+    margin-top: 5rem;
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: 10px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    padding: 2rem;
+    padding: 1rem 5rem 1rem 2rem;
     margin-bottom: 2rem;
     color: #222;
+}
+
+.result-section h2 {
+    color: var(--primary-green-dark);
+    margin-top: 0.2rem;
+    margin-bottom: 0.3rem;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 1rem;
+    margin-top: 0;
     background: var(--card-bg);
     border-radius: 8px;
     overflow: hidden;
@@ -205,12 +212,13 @@ tr:nth-child(even) td {
 .history-item .timestamp {
     color: var(--text-light);
     font-size: 0.95rem;
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.1rem;
 }
 
 .history-item .success {
     color: var(--success-text);
     font-weight: 600;
+    margin-top: 0.2rem;
 }
 
 .history-item .error {
@@ -295,9 +303,15 @@ tr:nth-child(even) td {
     margin: 0;
 }
 
+.result-meta {
+    margin: 0;
+    color: #222;
+    font-size: 1.05rem;
+}
+
 .table-container {
     overflow-x: auto;
-    margin-top: 1rem;
+    margin-top: 0;
 }
 
 h2 {
