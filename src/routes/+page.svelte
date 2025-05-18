@@ -34,7 +34,7 @@
         try {
             data = JSON.parse(input);
             jsonError = null;
-            previewData = JSON.stringify(data.slice(0, 3), null, 2);
+            previewData = JSON.stringify(data, null, 2);
         } catch (err) {
             jsonError = "Invalid JSON input.";
             data = [];
@@ -201,7 +201,7 @@
                 <h3>Preview</h3>
                 <pre class="json-preview">{previewData}</pre>
                 <p class="preview-note">
-                    Showing first 3 records of {data.length} total records
+                    Showing {data.length} total record{data.length === 1 ? '' : 's'}
                 </p>
             </div>
         {/if}
