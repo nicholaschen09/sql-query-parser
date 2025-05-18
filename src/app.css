@@ -456,36 +456,43 @@ p {
 }
 
 .sample-suggestions {
-    margin: 1.2rem 0 1rem 0;
+    margin: 1.2rem 0 2rem 0;
     display: flex;
     align-items: center;
     gap: 0.7rem;
     flex-wrap: wrap;
-    padding-left: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: rgba(0, 150, 36, 0.07);
+    border: 1.5px solid #b9f6ca;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 200, 83, 0.06);
+    justify-content: flex-start;
 }
 
 .sample-suggestions span {
-    font-weight: 500;
-    color: #fff;
+    font-weight: 600;
     font-size: 1.08rem;
+    margin-right: 0.5rem;
 }
 
 .sample-suggestions button {
     background: #e0e0e0;
     color: #067800;
-    border: 1.5px solid #009624;
-    border-radius: 6px;
-    padding: 0.45rem 1.2rem;
-    font-size: 1.05rem;
-    font-weight: 600;
+    border: 2px solid #009624;
+    border-radius: 20px;
+    padding: 0.5rem 1.4rem;
+    font-size: 1.08rem;
+    font-weight: 700;
     cursor: pointer;
-    transition: background 0.2s, box-shadow 0.2s;
-    box-shadow: 0 1px 4px rgba(0, 200, 83, 0.07);
+    transition: background 0.2s, box-shadow 0.2s, border-color 0.2s;
+    box-shadow: 0 1px 4px rgba(0, 200, 83, 0.09);
+    outline: none;
 }
 
 .sample-suggestions button:hover {
     background: #b9f6ca;
-    box-shadow: 0 2px 8px rgba(0, 200, 83, 0.13);
+    border-color: #00c853;
+    box-shadow: 0 2px 8px rgba(0, 200, 83, 0.18);
 }
 
 .json-input-section .sample-suggestions span {
