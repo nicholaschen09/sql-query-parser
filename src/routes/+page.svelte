@@ -198,7 +198,7 @@
 
         {#if previewData}
             <div class="preview-section">
-                <h3>Data Preview</h3>
+                <h3>Preview</h3>
                 <pre class="json-preview">{previewData}</pre>
                 <p class="preview-note">
                     Showing first 3 records of {data.length} total records
