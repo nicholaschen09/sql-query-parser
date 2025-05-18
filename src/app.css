@@ -466,7 +466,7 @@ p {
 
 .sample-suggestions span {
     font-weight: 500;
-    color: #222;
+    color: #fff;
     font-size: 1.08rem;
 }
 
@@ -486,4 +486,12 @@ p {
 .sample-suggestions button:hover {
     background: #b9f6ca;
     box-shadow: 0 2px 8px rgba(0, 200, 83, 0.13);
+}
+
+.json-input-section .sample-suggestions span {
+    color: #fff;
+}
+
+.sample-suggestions span {
+    color: #222;
 }
