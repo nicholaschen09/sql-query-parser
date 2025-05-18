@@ -412,9 +412,11 @@ p {
     outline: none;
 }
 
-.preview-section h3 {
+/* Ensure Preview title is green */
+.preview-section h2 {
     color: #067800;
     margin-bottom: 1rem;
+    margin-top: -2px;
 }
 
 .table-container {
