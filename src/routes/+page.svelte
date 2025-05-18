@@ -19,31 +19,31 @@
 
     // Sample data for suggestions
     const sampleJsons = [
-      {
-        label: "US States Population",
-        value: `[
+        {
+            label: "US States Population",
+            value: `[
   { "state": "California", "region": "West", "pop": 39538223, "pop_male": 19453769, "pop_female": 20084454 },
   { "state": "Texas", "region": "South", "pop": 29145505, "pop_male": 14358470, "pop_female": 14787035 },
   { "state": "Florida", "region": "South", "pop": 21538187, "pop_male": 10470577, "pop_female": 11067610 }
-]`
-      }
-      // Add more samples if you want
+]`,
+        },
+        // Add more samples if you want
     ];
 
     const sampleSqls = [
-      {
-        label: "All States",
-        value: "SELECT * FROM table;"
-      },
-      {
-        label: "States with pop > 20M",
-        value: "SELECT state, pop FROM table WHERE pop > 20000000;"
-      },
-      {
-        label: "States in the South",
-        value: "SELECT state FROM table WHERE region = 'South';"
-      }
-      // Add more samples if you want
+        {
+            label: "All States",
+            value: "SELECT * FROM table;",
+        },
+        {
+            label: "States with pop > 20M",
+            value: "SELECT state, pop FROM table WHERE pop > 20000000;",
+        },
+        {
+            label: "States in the South",
+            value: "SELECT state FROM table WHERE region = 'South';",
+        },
+        // Add more samples if you want
     ];
 
     function saveHistory() {
@@ -179,12 +179,18 @@
 
         <!-- Sample JSON suggestions -->
         <div class="sample-suggestions">
-          <span>Try sample JSON:</span>
-          {#each sampleJsons as sample}
-            <button type="button" on:click={() => { jsonInput = sample.value; processJsonInput(sample.value); }}>
-              {sample.label}
-            </button>
-          {/each}
+            <span>Try sample JSON:</span>
+            {#each sampleJsons as sample}
+                <button
+                    type="button"
+                    on:click={() => {
+                        jsonInput = sample.value;
+                        processJsonInput(sample.value);
+                    }}
+                >
+                    {sample.label}
+                </button>
+            {/each}
         </div>
 
         {#if inputMode === "file"}
@@ -222,6 +228,7 @@
             </div>
         {:else}
             <div class="raw-json-section">
+                <h2>JSON Input</h2>
                 <textarea
                     bind:value={jsonInput}
                     placeholder="Paste your JSON data here..."
@@ -237,10 +244,12 @@
 
         {#if previewData}
             <div class="preview-section">
-                <h3>Preview</h3>
+                <h2>Preview</h2>
                 <pre class="json-preview">{previewData}</pre>
                 <p class="preview-note">
-                    Showing {data.length} total record{data.length === 1 ? '' : 's'}
+                    Showing {data.length} total record{data.length === 1
+                        ? ""
+                        : "s"}
                 </p>
             </div>
         {/if}
@@ -249,12 +258,12 @@
     <div class="query-section">
         <!-- Sample SQL suggestions -->
         <div class="sample-suggestions">
-          <span>Try sample SQL:</span>
-          {#each sampleSqls as sample}
-            <button type="button" on:click={() => query = sample.value}>
-              {sample.label}
-            </button>
-          {/each}
+            <span>Try sample SQL:</span>
+            {#each sampleSqls as sample}
+                <button type="button" on:click={() => (query = sample.value)}>
+                    {sample.label}
+                </button>
+            {/each}
         </div>
         <h2>SQL Query</h2>
         <textarea
@@ -348,4 +357,3 @@
         </div>
     {/if}
 </main>
-
