@@ -338,7 +338,7 @@
 
     {#if history.length > 0}
         <div class="history-section">
-            <h2>Query History</h2>
+            <h2>Query History ({history.length})</h2>
             {#each history as item}
                 <div class="history-item">
                     <div class="query">{item.query}</div>
