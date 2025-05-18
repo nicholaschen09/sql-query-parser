@@ -78,6 +78,8 @@ h1 {
     border: 1.5px solid #bdbdbd;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    overflow-x: hidden;
+    white-space: pre-wrap;
 }
 
 /* --- Unified custom scrollbar styles for textarea and JSON preview --- */
@@ -87,6 +89,8 @@ h1 {
     /* Firefox */
     scrollbar-color: #009624 #e0e0e0;
     /* Firefox */
+    overflow-x: hidden;
+    white-space: pre-wrap;
 }
 
 .query-section textarea::-webkit-scrollbar,
@@ -322,8 +326,8 @@ tr:nth-child(even) td {
     border: 1.5px solid #bdbdbd;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    overflow-x: auto;
-    overflow-y: auto;
+    overflow-x: hidden;
+    white-space: pre-wrap;
 }
 
 .preview-note {
