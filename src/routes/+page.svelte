@@ -161,7 +161,7 @@
     <div class="app-summary-card">
         <p class="app-summary">
             <strong>Welcome!</strong> This tool lets you quickly explore and analyze
-            your own JSON data using familiar SQL queries—right in your browser,
+            your own JSON data using familiar SQL queries right in your browser,
             with no setup or database required.
         </p>
         <ol class="app-guide">
