@@ -527,3 +527,52 @@ p {
 .app-guide li {
     margin-bottom: 0.3rem;
 }
+
+@media (max-width: 600px) {
+    .container {
+        padding: 0.7rem;
+    }
+
+    .app-summary-card {
+        padding: 0.7rem 0.7rem 0.7rem 0.7rem;
+        font-size: 0.98rem;
+    }
+
+    .app-summary {
+        font-size: 1rem;
+    }
+
+    .app-guide {
+        font-size: 0.97rem;
+        padding-left: 0.7rem;
+    }
+
+    .sample-suggestions {
+        padding: 0.7rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .sample-suggestions button {
+        width: 100%;
+        min-width: 0;
+        text-align: left;
+        font-size: 1rem;
+        padding: 0.5rem 0.7rem;
+    }
+
+    .query-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.7rem;
+    }
+
+    .query-actions button,
+    .query-actions .clear-btn {
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+        margin: 0;
+    }
+}
