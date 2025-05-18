@@ -17,6 +17,35 @@
     let previewData: string = "";
     let inputMode: "file" | "raw" = "file";
 
+    // Sample data for suggestions
+    const sampleJsons = [
+        {
+            label: "US States Population",
+            value: `[
+  { "state": "California", "region": "West", "pop": 39538223, "pop_male": 19453769, "pop_female": 20084454 },
+  { "state": "Texas", "region": "South", "pop": 29145505, "pop_male": 14358470, "pop_female": 14787035 },
+  { "state": "Florida", "region": "South", "pop": 21538187, "pop_male": 10470577, "pop_female": 11067610 }
+]`,
+        },
+        // Add more samples if you want
+    ];
+
+    const sampleSqls = [
+        {
+            label: "All States",
+            value: "SELECT * FROM table;",
+        },
+        {
+            label: "States with pop > 20M",
+            value: "SELECT state, pop FROM table WHERE pop > 20000000;",
+        },
+        {
+            label: "States in the South",
+            value: "SELECT state FROM table WHERE region = 'South';",
+        },
+        // Add more samples if you want
+    ];
+
     function saveHistory() {
         sessionStorage.setItem("queryHistory", JSON.stringify(history));
         sessionStorage.setItem("queryHistoryNextId", String(nextId));
@@ -34,7 +63,7 @@
         try {
             data = JSON.parse(input);
             jsonError = null;
-            previewData = JSON.stringify(data.slice(0, 3), null, 2);
+            previewData = JSON.stringify(data, null, 2);
         } catch (err) {
             jsonError = "Invalid JSON input.";
             data = [];
@@ -129,6 +158,27 @@
 
 <main class="container">
     <h1>SQL Query Parser</h1>
+    <div class="app-summary-card">
+        <p class="app-summary">
+            <strong>Welcome!</strong> This tool lets you quickly explore and analyze
+            your own JSON data using familiar SQL queries right in your browser,
+            with no setup or database required.
+        </p>
+        <ol class="app-guide">
+            <li>
+                <strong>Paste</strong> or <strong>upload</strong> your JSON data
+                below.
+            </li>
+            <li><strong>Preview</strong> your data instantly.</li>
+            <li>
+                <strong>Write</strong> an SQL query and click
+                <em>Execute Query</em>.
+            </li>
+            <li>
+                See results, errors, and your query history—all in one place!
+            </li>
+        </ol>
+    </div>
 
     <div class="json-input-section">
         <div class="input-mode-toggle">
@@ -146,6 +196,22 @@
             >
                 Raw JSON
             </button>
+        </div>
+
+        <!-- Sample JSON suggestions -->
+        <div class="sample-suggestions">
+            <span>Try sample JSON:</span>
+            {#each sampleJsons as sample}
+                <button
+                    type="button"
+                    on:click={() => {
+                        jsonInput = sample.value;
+                        processJsonInput(sample.value);
+                    }}
+                >
+                    {sample.label}
+                </button>
+            {/each}
         </div>
 
         {#if inputMode === "file"}
@@ -183,6 +249,7 @@
             </div>
         {:else}
             <div class="raw-json-section">
+                <h2>JSON Input</h2>
                 <textarea
                     bind:value={jsonInput}
                     placeholder="Paste your JSON data here..."
@@ -198,16 +265,27 @@
 
         {#if previewData}
             <div class="preview-section">
-                <h3>Data Preview</h3>
+                <h2>Preview</h2>
                 <pre class="json-preview">{previewData}</pre>
                 <p class="preview-note">
-                    Showing first 3 records of {data.length} total records
+                    Showing {data.length} total record{data.length === 1
+                        ? ""
+                        : "s"}
                 </p>
             </div>
         {/if}
     </div>
 
     <div class="query-section">
+        <!-- Sample SQL suggestions -->
+        <div class="sample-suggestions">
+            <span>Try sample SQL:</span>
+            {#each sampleSqls as sample}
+                <button type="button" on:click={() => (query = sample.value)}>
+                    {sample.label}
+                </button>
+            {/each}
+        </div>
         <h2>SQL Query</h2>
         <textarea
             bind:value={query}
@@ -281,7 +359,7 @@
 
     {#if history.length > 0}
         <div class="history-section">
-            <h2>Query History</h2>
+            <h2>Query History ({history.length})</h2>
             {#each history as item}
                 <div class="history-item">
                     <div class="query">{item.query}</div>
@@ -300,4 +378,3 @@
         </div>
     {/if}
 </main>
-
