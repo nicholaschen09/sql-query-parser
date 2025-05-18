@@ -497,3 +497,33 @@ p {
     margin-top: -2px;
     color: #067800;
 }
+
+.app-summary-card {
+    background: #f7f7f7;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    padding: 1.2rem 2rem 1.2rem 2rem;
+    margin-bottom: 2.2rem;
+    border: 1.5px solid #b9f6ca;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.app-summary {
+    color: #067800;
+    font-size: 1.13rem;
+    margin-bottom: 0.7rem;
+    text-align: center;
+}
+
+.app-guide {
+    color: #222;
+    font-size: 1.05rem;
+    margin: 0;
+    padding-left: 1.2rem;
+    text-align: left;
+}
+
+.app-guide li {
+    margin-bottom: 0.3rem;
+}

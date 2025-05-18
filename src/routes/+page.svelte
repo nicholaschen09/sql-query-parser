@@ -158,6 +158,27 @@
 
 <main class="container">
     <h1>SQL Query Parser</h1>
+    <div class="app-summary-card">
+        <p class="app-summary">
+            <strong>Welcome!</strong> This tool lets you quickly explore and analyze
+            your own JSON data using familiar SQL queries—right in your browser,
+            with no setup or database required.
+        </p>
+        <ol class="app-guide">
+            <li>
+                <strong>Paste</strong> or <strong>upload</strong> your JSON data
+                below.
+            </li>
+            <li><strong>Preview</strong> your data instantly.</li>
+            <li>
+                <strong>Write</strong> an SQL query and click
+                <em>Execute Query</em>.
+            </li>
+            <li>
+                See results, errors, and your query history—all in one place!
+            </li>
+        </ol>
+    </div>
 
     <div class="json-input-section">
         <div class="input-mode-toggle">
