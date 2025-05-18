@@ -17,6 +17,35 @@
     let previewData: string = "";
     let inputMode: "file" | "raw" = "file";
 
+    // Sample data for suggestions
+    const sampleJsons = [
+      {
+        label: "US States Population",
+        value: `[
+  { "state": "California", "region": "West", "pop": 39538223, "pop_male": 19453769, "pop_female": 20084454 },
+  { "state": "Texas", "region": "South", "pop": 29145505, "pop_male": 14358470, "pop_female": 14787035 },
+  { "state": "Florida", "region": "South", "pop": 21538187, "pop_male": 10470577, "pop_female": 11067610 }
+]`
+      }
+      // Add more samples if you want
+    ];
+
+    const sampleSqls = [
+      {
+        label: "All States",
+        value: "SELECT * FROM table;"
+      },
+      {
+        label: "States with pop > 20M",
+        value: "SELECT state, pop FROM table WHERE pop > 20000000;"
+      },
+      {
+        label: "States in the South",
+        value: "SELECT state FROM table WHERE region = 'South';"
+      }
+      // Add more samples if you want
+    ];
+
     function saveHistory() {
         sessionStorage.setItem("queryHistory", JSON.stringify(history));
         sessionStorage.setItem("queryHistoryNextId", String(nextId));
@@ -148,6 +177,16 @@
             </button>
         </div>
 
+        <!-- Sample JSON suggestions -->
+        <div class="sample-suggestions">
+          <span>Try sample JSON:</span>
+          {#each sampleJsons as sample}
+            <button type="button" on:click={() => { jsonInput = sample.value; processJsonInput(sample.value); }}>
+              {sample.label}
+            </button>
+          {/each}
+        </div>
+
         {#if inputMode === "file"}
             <div
                 class="upload-zone"
@@ -208,6 +247,15 @@
     </div>
 
     <div class="query-section">
+        <!-- Sample SQL suggestions -->
+        <div class="sample-suggestions">
+          <span>Try sample SQL:</span>
+          {#each sampleSqls as sample}
+            <button type="button" on:click={() => query = sample.value}>
+              {sample.label}
+            </button>
+          {/each}
+        </div>
         <h2>SQL Query</h2>
         <textarea
             bind:value={query}

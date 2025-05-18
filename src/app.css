@@ -77,6 +77,26 @@ h1 {
     max-height: 350px;
     resize: vertical;
     overflow-y: auto;
+    scrollbar-width: thin;
+    /* For Firefox */
+    scrollbar-color: #009624 #e0e0e0;
+    /* For Firefox */
+    border: 1.5px solid #bdbdbd;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Webkit scrollbar styles */
+.query-section textarea::-webkit-scrollbar,
+.json-preview::-webkit-scrollbar {
+    width: 10px;
+    background: #e0e0e0;
+    border-radius: 6px;
+}
+
+.query-section textarea::-webkit-scrollbar-thumb,
+.json-preview::-webkit-scrollbar-thumb {
+    background: #009624;
+    border-radius: 6px;
 }
 
 .query-section textarea:focus {
@@ -297,6 +317,29 @@ tr:nth-child(even) td {
     font-size: 0.9rem;
     margin: 1rem 0;
     max-height: 350px;
+    scrollbar-width: thin;
+    /* For Firefox */
+    scrollbar-color: #009624 #e0e0e0;
+    /* For Firefox */
+    border: 1.5px solid #bdbdbd;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Webkit scrollbar styles */
+.json-preview::-webkit-scrollbar {
+    width: 10px;
+    background: #e0e0e0;
+    border-radius: 6px;
+}
+
+.json-preview::-webkit-scrollbar-thumb {
+    background: #009624;
+    border-radius: 6px;
+}
+
+.json-preview:focus {
+    border-color: #009624;
+    outline: none;
 }
 
 .preview-note {
@@ -410,4 +453,37 @@ h3 {
 p {
     margin: 0.5rem 0;
     color: var(--text-light);
+}
+
+.sample-suggestions {
+    margin: 1.2rem 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+    padding-left: 0.5rem;
+}
+
+.sample-suggestions span {
+    font-weight: 500;
+    color: #222;
+    font-size: 1.08rem;
+}
+
+.sample-suggestions button {
+    background: #e0e0e0;
+    color: #067800;
+    border: 1.5px solid #009624;
+    border-radius: 6px;
+    padding: 0.45rem 1.2rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 4px rgba(0, 200, 83, 0.07);
+}
+
+.sample-suggestions button:hover {
+    background: #b9f6ca;
+    box-shadow: 0 2px 8px rgba(0, 200, 83, 0.13);
 }
