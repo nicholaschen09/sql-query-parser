@@ -1,4 +1,7 @@
 # SQL Query Parser
+<img width="1138" alt="Screenshot 2025-05-28 at 1 12 13 AM" src="https://github.com/user-attachments/assets/58e111b0-aab9-4bea-9017-3dfc85d0f6b4" />
+<img width="995" alt="Screenshot 2025-05-28 at 1 12 29 AM" src="https://github.com/user-attachments/assets/729695a6-d6b9-4e8c-9021-4fb33ce717e2" />
+<img width="956" alt="Screenshot 2025-05-28 at 1 12 54 AM" src="https://github.com/user-attachments/assets/a7976d9a-9b8c-459d-a0e8-976d80e8577b" />
 
 A TypeScript implementation of a SQL query parser that can query flat JSON objects. The application provides a web interface for executing SQL queries and viewing query history.
 
