@@ -634,3 +634,19 @@
         </div>
     {/if}
 </main>
+
+<footer
+    style="width:100%;padding:1.2rem 0;text-align:center;background:rgba(0,61,31,0.95);color:#bdbdbd;font-size:1rem;letter-spacing:0.01em;margin-top:2rem;"
+>
+    Made with Love by <a
+        href="https://x.com/nicholaschen__"
+        target="_blank"
+        style="color:#b9f6ca;text-decoration:underline;">Nicholas Chen</a
+    >
+    &middot;
+    <a
+        href="https://github.com/your-repo"
+        target="_blank"
+        style="color:#b9f6ca;text-decoration:underline;">GitHub</a
+    >
+</footer>
