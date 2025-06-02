@@ -530,6 +530,7 @@
                         class="clear-btn"
                         style="float:right;margin-top:-8px;margin-bottom:8px"
                         on:click={() =>
+                            result &&
                             copyToClipboard(
                                 JSON.stringify(result.data, null, 2),
                             )}
