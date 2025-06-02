@@ -538,6 +538,31 @@ p {
     margin-bottom: 0.3rem;
 }
 
+.app-summary-card,
+.app-summary-card * {
+    font-family: 'DM Serif Display', 'Playfair Display', serif !important;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+}
+
+/* Keep Inter for code, buttons, and monospace areas */
+button,
+.clear-btn,
+.json-preview,
+.history-item .query,
+.query-section textarea,
+.raw-json-section textarea {
+    font-family: 'Inter', 'Roboto', 'Segoe UI', Arial, sans-serif !important;
+}
+
+.sample-suggestions,
+.sample-suggestions *,
+.sample-suggestions button {
+    font-family: 'DM Serif Display', 'Playfair Display', serif !important;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+}
+
 @media (max-width: 600px) {
     .container {
         padding: 0.7rem;
