@@ -21,6 +21,7 @@
     let copyTimeout: ReturnType<typeof setTimeout> | null = null;
     let copySqlMessage = "";
     let copySqlTimeout: ReturnType<typeof setTimeout> | null = null;
+    let selectedHistory: QueryHistory | null = null;
 
     // Sample data for suggestions
     const sampleJsons = [
@@ -587,7 +588,11 @@
         <div class="history-section">
             <h2>Query History ({history.length})</h2>
             {#each history as item}
-                <div class="history-item">
+                <div
+                    class="history-item"
+                    style="cursor:pointer;"
+                    on:click={() => (selectedHistory = item)}
+                >
                     <div class="query">{item.query}</div>
                     <div class="timestamp">
                         {new Date(item.timestamp).toLocaleString()}
@@ -601,6 +606,61 @@
                     {/if}
                 </div>
             {/each}
+        </div>
+    {/if}
+
+    {#if selectedHistory}
+        <div
+            class="modal-backdrop"
+            style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:1000;display:flex;align-items:center;justify-content:center;"
+        >
+            <div
+                class="modal-content"
+                style="background:#fff;padding:1.2rem 2.5rem 2rem 2.5rem;border-radius:12px;max-width:600px;width:90vw;box-shadow:0 4px 32px rgba(0,0,0,0.18);position:relative;overflow:auto;"
+            >
+                <button
+                    on:click={() => (selectedHistory = null)}
+                    style="position:absolute;top:1rem;right:1rem;font-size:1.5rem;background:none;border:none;cursor:pointer;color:#222;"
+                    >&times;</button
+                >
+                <h2 style="color:#067800;margin-top:0;">Query Details</h2>
+                <div style="margin-bottom:1.2rem;">
+                    <strong style="color:#067800;">SQL Query:</strong><br
+                    /><span
+                        style="font-family:'Fira Mono',monospace;color:#067800;"
+                        >{selectedHistory.query}</span
+                    >
+                </div>
+                <div style="margin-bottom:1.2rem;">
+                    <strong style="color:#067800;">Timestamp:</strong>
+                    <span style="color:#067800;"
+                        >{new Date(
+                            selectedHistory.timestamp,
+                        ).toLocaleString()}</span
+                    >
+                </div>
+                {#if selectedHistory.result.success}
+                    <div style="margin-bottom:1.2rem;">
+                        <strong style="color:#067800;">Rows Returned:</strong>
+                        <span style="color:#067800;"
+                            >{selectedHistory.result.data?.length || 0}</span
+                        >
+                    </div>
+                    <div style="margin-bottom:1.2rem;">
+                        <strong style="color:#067800;">Result Data:</strong>
+                        <pre
+                            style="background:#f7f7f7;padding:1rem;border-radius:8px;max-height:250px;overflow:auto;font-size:0.9rem;color:#067800;">{JSON.stringify(
+                                selectedHistory.result.data,
+                                null,
+                                2,
+                            )}</pre>
+                    </div>
+                {:else}
+                    <div class="error" style="margin-bottom:1.2rem;">
+                        {selectedHistory.result.error}
+                    </div>
+                {/if}
+            </div>
         </div>
     {/if}
 
