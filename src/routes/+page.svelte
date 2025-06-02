@@ -16,6 +16,8 @@
     let isDragging = false;
     let previewData: string = "";
     let inputMode: "file" | "raw" = "file";
+    let copyMessage = "";
+    let copyTimeout: ReturnType<typeof setTimeout> | null = null;
 
     // Sample data for suggestions
     const sampleJsons = [
@@ -151,6 +153,14 @@
         saveHistory();
     }
 
+    function copyToClipboard(text: string) {
+        navigator.clipboard.writeText(text).then(() => {
+            copyMessage = "Copied!";
+            if (copyTimeout) clearTimeout(copyTimeout);
+            copyTimeout = setTimeout(() => (copyMessage = ""), 1200);
+        });
+    }
+
     onMount(() => {
         loadHistoryFromSession();
     });
@@ -266,12 +276,24 @@
         {#if previewData}
             <div class="preview-section">
                 <h2>Preview</h2>
+                <button
+                    class="clear-btn"
+                    style="float:right;margin-top:-8px;margin-bottom:8px"
+                    on:click={() => copyToClipboard(previewData)}
+                >
+                    Copy to Clipboard
+                </button>
                 <pre class="json-preview">{previewData}</pre>
                 <p class="preview-note">
                     Showing {data.length} total record{data.length === 1
                         ? ""
                         : "s"}
                 </p>
+                {#if copyMessage}
+                    <div style="color:#067800;font-weight:600;">
+                        {copyMessage}
+                    </div>
+                {/if}
             </div>
         {/if}
     </div>
@@ -314,8 +336,18 @@
     {#if result}
         <div class="result-section">
             <h2>Result</h2>
-            {#if result.success}
+            {#if result && result.success}
                 {#if result.data && result.data.length > 0}
+                    <button
+                        class="clear-btn"
+                        style="float:right;margin-top:-8px;margin-bottom:8px"
+                        on:click={() =>
+                            copyToClipboard(
+                                JSON.stringify(result.data, null, 2),
+                            )}
+                    >
+                        Copy to Clipboard
+                    </button>
                     <div class="result-meta">
                         <span
                             >{result.data.length} row{result.data.length === 1
@@ -346,10 +378,15 @@
                             </tbody>
                         </table>
                     </div>
+                    {#if copyMessage}
+                        <div style="color:#067800;font-weight:600;">
+                            {copyMessage}
+                        </div>
+                    {/if}
                 {:else}
                     <p>No results found</p>
                 {/if}
-            {:else}
+            {:else if result && result.error}
                 <div class="error">
                     {result.error}
                 </div>
