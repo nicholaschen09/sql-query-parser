@@ -11,7 +11,8 @@
     let queryTime: number | null = null;
     let nextId = 1;
     let jsonInput = "";
-    let data: Row[] = [];
+    let tables: Record<string, Row[]> = {};
+    let currentTable: string | null = null;
     let jsonError: string | null = null;
     let isDragging = false;
     let previewData: string = "";
@@ -63,27 +64,40 @@
     function processJsonInput(input: string) {
         jsonInput = input;
         try {
-            data = JSON.parse(input);
-            jsonError = null;
-            previewData = JSON.stringify(data, null, 2);
+            const rows = JSON.parse(input);
+            if (Array.isArray(rows)) {
+                addTable("RawInput", rows);
+                jsonError = null;
+            } else {
+                jsonError = "Input is not a JSON array.";
+            }
         } catch (err) {
             jsonError = "Invalid JSON input.";
-            data = [];
-            previewData = "";
         }
     }
 
     function handleFileChange(event: Event) {
-        const file = (event.target as HTMLInputElement).files?.[0];
-        if (file) {
-            processFile(file);
+        const files = (event.target as HTMLInputElement).files;
+        if (files) {
+            for (const file of Array.from(files)) {
+                processFile(file);
+            }
         }
     }
 
     function processFile(file: File) {
         const reader = new FileReader();
         reader.onload = (e) => {
-            processJsonInput(e.target?.result as string);
+            try {
+                const rows = JSON.parse(e.target?.result as string);
+                if (Array.isArray(rows)) {
+                    addTable(file.name.replace(/\.[^/.]+$/, ""), rows);
+                } else {
+                    jsonError = `File ${file.name} does not contain a JSON array.`;
+                }
+            } catch (err) {
+                jsonError = `Invalid JSON in file ${file.name}.`;
+            }
         };
         reader.readAsText(file);
     }
@@ -110,7 +124,7 @@
 
     function executeQuery() {
         if (!query.trim()) return;
-        if (!data.length) {
+        if (!currentTable || !tables[currentTable]) {
             result = { success: false, error: "No JSON data loaded." };
             return;
         }
@@ -118,7 +132,7 @@
         queryTime = null;
         const start = performance.now();
         try {
-            const parser = new SQLParser(data);
+            const parser = new SQLParser(tables[currentTable]);
             const parsed = parser.parse(query);
             const res = parser.execute(parsed);
             result = { success: true, data: res };
@@ -159,6 +173,89 @@
             if (copyTimeout) clearTimeout(copyTimeout);
             copyTimeout = setTimeout(() => (copyMessage = ""), 1200);
         });
+    }
+
+    // Helper to add a new table
+    function addTable(name: string, rows: Row[]) {
+        tables = { ...tables, [name]: rows };
+        if (!currentTable) currentTable = name;
+    }
+
+    // Helper to remove a table
+    function removeTable(name: string) {
+        const { [name]: _, ...rest } = tables;
+        tables = rest;
+        if (currentTable === name) {
+            currentTable = Object.keys(tables)[0] || null;
+        }
+    }
+
+    // Preview logic for current table
+    $: previewData =
+        currentTable && tables[currentTable]
+            ? JSON.stringify(tables[currentTable], null, 2)
+            : "";
+
+    // Export helpers
+    function exportResultAsJSON() {
+        if (result && result.data) {
+            const blob = new Blob([JSON.stringify(result.data, null, 2)], {
+                type: "application/json",
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "query_result.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    }
+
+    function exportResultAsCSV() {
+        if (result && result.data && result.data.length > 0) {
+            const headers = Object.keys(result.data[0]);
+            const csvRows = [headers.join(",")];
+            for (const row of result.data) {
+                csvRows.push(
+                    headers.map((h) => JSON.stringify(row[h] ?? "")).join(","),
+                );
+            }
+            const csv = csvRows.join("\n");
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "query_result.csv";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    }
+
+    // Excel export (SheetJS)
+    async function exportResultAsExcel() {
+        if (result && result.data && result.data.length > 0) {
+            try {
+                const XLSX = await import("xlsx");
+                const ws = XLSX.utils.json_to_sheet(result.data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Results");
+                const wbout = XLSX.write(wb, {
+                    bookType: "xlsx",
+                    type: "array",
+                });
+                const blob = new Blob([wbout], {
+                    type: "application/octet-stream",
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "query_result.xlsx";
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch (e) {
+                alert("Excel export requires SheetJS (xlsx) to be installed.");
+            }
+        }
     }
 
     onMount(() => {
@@ -274,18 +371,24 @@
         {/if}
 
         {#if previewData}
-            <div class="preview-section">
+            <div class="preview-section" style="position:relative;">
                 <h2>Preview</h2>
-                <button
-                    class="clear-btn"
-                    style="float:right;margin-top:-8px;margin-bottom:8px"
-                    on:click={() => copyToClipboard(previewData)}
-                >
-                    Copy to Clipboard
-                </button>
                 <pre class="json-preview">{previewData}</pre>
+                <div
+                    style="display:flex;justify-content:flex-end;align-items:center;margin-top:0.5rem;"
+                >
+                    <button
+                        class="clear-btn"
+                        style="margin-right:0.2rem;"
+                        on:click={() => copyToClipboard(previewData)}
+                    >
+                        Copy to Clipboard
+                    </button>
+                </div>
                 <p class="preview-note">
-                    Showing {data.length} total record{data.length === 1
+                    Showing {(currentTable && tables[currentTable]?.length) ||
+                        0} total record{(currentTable &&
+                        tables[currentTable]?.length) === 1
                         ? ""
                         : "s"}
                 </p>
@@ -315,7 +418,7 @@
             rows="4"
         ></textarea>
         <div class="query-actions">
-            <button on:click={executeQuery} disabled={loading || !data.length}>
+            <button on:click={executeQuery} disabled={loading || !currentTable}>
                 {#if loading}
                     <span class="spinner"></span> Executing...
                 {:else}
@@ -338,6 +441,17 @@
             <h2>Result</h2>
             {#if result && result.success}
                 {#if result.data && result.data.length > 0}
+                    <div style="display:flex;gap:0.7rem;margin-bottom:0.7rem;">
+                        <button class="clear-btn" on:click={exportResultAsJSON}
+                            >Export JSON</button
+                        >
+                        <button class="clear-btn" on:click={exportResultAsCSV}
+                            >Export CSV</button
+                        >
+                        <button class="clear-btn" on:click={exportResultAsExcel}
+                            >Export Excel</button
+                        >
+                    </div>
                     <button
                         class="clear-btn"
                         style="float:right;margin-top:-8px;margin-bottom:8px"
@@ -412,6 +526,37 @@
                     {/if}
                 </div>
             {/each}
+        </div>
+    {/if}
+
+    {#if Object.keys(tables).length > 0}
+        <div class="table-list-section">
+            <h3>Loaded Tables</h3>
+            <ul
+                style="list-style:none;padding:0;display:flex;gap:1rem;flex-wrap:wrap;"
+            >
+                {#each Object.keys(tables) as tableName}
+                    <li style="display:flex;align-items:center;gap:0.3rem;">
+                        <button
+                            class="clear-btn"
+                            style="background:{currentTable === tableName
+                                ? '#b9f6ca'
+                                : '#e0e0e0'};color:#067800;font-weight:600;"
+                            on:click={() => (currentTable = tableName)}
+                        >
+                            {tableName}
+                        </button>
+                        <button
+                            class="clear-btn"
+                            style="background:#ffebee;color:#c62828;font-size:0.9rem;padding:0.3rem 0.7rem;"
+                            on:click={() => removeTable(tableName)}
+                            title="Remove table"
+                        >
+                            ✕
+                        </button>
+                    </li>
+                {/each}
+            </ul>
         </div>
     {/if}
 </main>
