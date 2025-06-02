@@ -30,24 +30,67 @@
   { "state": "Florida", "region": "South", "pop": 21538187, "pop_male": 10470577, "pop_female": 11067610 }
 ]`,
         },
+        {
+            label: "World Cities",
+            value: `[
+  { "city": "Tokyo", "country": "Japan", "population": 37400068, "area_km2": 2191 },
+  { "city": "Delhi", "country": "India", "population": 28514000, "area_km2": 1484 },
+  { "city": "Shanghai", "country": "China", "population": 25582000, "area_km2": 6340 }
+]`,
+        },
+        {
+            label: "Books",
+            value: `[
+  { "title": "To Kill a Mockingbird", "author": "Harper Lee", "year": 1960, "genre": "Fiction" },
+  { "title": "1984", "author": "George Orwell", "year": 1949, "genre": "Dystopian" },
+  { "title": "The Great Gatsby", "author": "F. Scott Fitzgerald", "year": 1925, "genre": "Classic" }
+]`,
+        },
         // Add more samples if you want
     ];
 
-    const sampleSqls = [
-        {
-            label: "All States",
-            value: "SELECT * FROM table;",
-        },
-        {
-            label: "States with pop > 20M",
-            value: "SELECT state, pop FROM table WHERE pop > 20000000;",
-        },
-        {
-            label: "States in the South",
-            value: "SELECT state FROM table WHERE region = 'South';",
-        },
-        // Add more samples if you want
-    ];
+    const sampleSqlMap: Record<string, { label: string; value: string }[]> = {
+        "US States Population": [
+            { label: "All States", value: "SELECT * FROM table;" },
+            {
+                label: "States with pop > 20M",
+                value: "SELECT state, pop FROM table WHERE pop > 20000000;",
+            },
+            {
+                label: "States in the South",
+                value: "SELECT state FROM table WHERE region = 'South';",
+            },
+        ],
+        "World Cities": [
+            { label: "All Cities", value: "SELECT * FROM table;" },
+            {
+                label: "Cities with pop > 25M",
+                value: "SELECT city, population FROM table WHERE population > 25000000;",
+            },
+            {
+                label: "Cities in China",
+                value: "SELECT city FROM table WHERE country = 'China';",
+            },
+        ],
+        Books: [
+            { label: "All Books", value: "SELECT * FROM table;" },
+            {
+                label: "Books before 1950",
+                value: "SELECT title, year FROM table WHERE year < 1950;",
+            },
+            {
+                label: "Fiction Books",
+                value: "SELECT title FROM table WHERE genre = 'Fiction';",
+            },
+        ],
+    };
+
+    let sampleSqls = sampleSqlMap["US States Population"];
+
+    function setSampleSqlsFor(label: string) {
+        sampleSqls =
+            sampleSqlMap[label] || sampleSqlMap["US States Population"];
+    }
 
     function saveHistory() {
         sessionStorage.setItem("queryHistory", JSON.stringify(history));
@@ -314,6 +357,7 @@
                     on:click={() => {
                         jsonInput = sample.value;
                         processJsonInput(sample.value);
+                        setSampleSqlsFor(sample.label);
                     }}
                 >
                     {sample.label}
