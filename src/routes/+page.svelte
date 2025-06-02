@@ -11,11 +11,17 @@
     let queryTime: number | null = null;
     let nextId = 1;
     let jsonInput = "";
-    let data: Row[] = [];
+    let tables: Record<string, Row[]> = {};
+    let currentTable: string | null = null;
     let jsonError: string | null = null;
     let isDragging = false;
     let previewData: string = "";
     let inputMode: "file" | "raw" = "file";
+    let copyMessage = "";
+    let copyTimeout: ReturnType<typeof setTimeout> | null = null;
+    let copySqlMessage = "";
+    let copySqlTimeout: ReturnType<typeof setTimeout> | null = null;
+    let selectedHistory: QueryHistory | null = null;
 
     // Sample data for suggestions
     const sampleJsons = [
@@ -27,24 +33,67 @@
   { "state": "Florida", "region": "South", "pop": 21538187, "pop_male": 10470577, "pop_female": 11067610 }
 ]`,
         },
+        {
+            label: "World Cities",
+            value: `[
+  { "city": "Tokyo", "country": "Japan", "population": 37400068, "area_km2": 2191 },
+  { "city": "Delhi", "country": "India", "population": 28514000, "area_km2": 1484 },
+  { "city": "Shanghai", "country": "China", "population": 25582000, "area_km2": 6340 }
+]`,
+        },
+        {
+            label: "Books",
+            value: `[
+  { "title": "To Kill a Mockingbird", "author": "Harper Lee", "year": 1960, "genre": "Fiction" },
+  { "title": "1984", "author": "George Orwell", "year": 1949, "genre": "Dystopian" },
+  { "title": "The Great Gatsby", "author": "F. Scott Fitzgerald", "year": 1925, "genre": "Classic" }
+]`,
+        },
         // Add more samples if you want
     ];
 
-    const sampleSqls = [
-        {
-            label: "All States",
-            value: "SELECT * FROM table;",
-        },
-        {
-            label: "States with pop > 20M",
-            value: "SELECT state, pop FROM table WHERE pop > 20000000;",
-        },
-        {
-            label: "States in the South",
-            value: "SELECT state FROM table WHERE region = 'South';",
-        },
-        // Add more samples if you want
-    ];
+    const sampleSqlMap: Record<string, { label: string; value: string }[]> = {
+        "US States Population": [
+            { label: "All States", value: "SELECT * FROM table;" },
+            {
+                label: "States with pop > 20M",
+                value: "SELECT state, pop FROM table WHERE pop > 20000000;",
+            },
+            {
+                label: "States in the South",
+                value: "SELECT state FROM table WHERE region = 'South';",
+            },
+        ],
+        "World Cities": [
+            { label: "All Cities", value: "SELECT * FROM table;" },
+            {
+                label: "Cities with pop > 25M",
+                value: "SELECT city, population FROM table WHERE population > 25000000;",
+            },
+            {
+                label: "Cities in China",
+                value: "SELECT city FROM table WHERE country = 'China';",
+            },
+        ],
+        Books: [
+            { label: "All Books", value: "SELECT * FROM table;" },
+            {
+                label: "Books before 1950",
+                value: "SELECT title, year FROM table WHERE year < 1950;",
+            },
+            {
+                label: "Fiction Books",
+                value: "SELECT title FROM table WHERE genre = 'Fiction';",
+            },
+        ],
+    };
+
+    let sampleSqls = sampleSqlMap["US States Population"];
+
+    function setSampleSqlsFor(label: string) {
+        sampleSqls =
+            sampleSqlMap[label] || sampleSqlMap["US States Population"];
+    }
 
     function saveHistory() {
         sessionStorage.setItem("queryHistory", JSON.stringify(history));
@@ -61,27 +110,40 @@
     function processJsonInput(input: string) {
         jsonInput = input;
         try {
-            data = JSON.parse(input);
-            jsonError = null;
-            previewData = JSON.stringify(data, null, 2);
+            const rows = JSON.parse(input);
+            if (Array.isArray(rows)) {
+                addTable("RawInput", rows);
+                jsonError = null;
+            } else {
+                jsonError = "Input is not a JSON array.";
+            }
         } catch (err) {
             jsonError = "Invalid JSON input.";
-            data = [];
-            previewData = "";
         }
     }
 
     function handleFileChange(event: Event) {
-        const file = (event.target as HTMLInputElement).files?.[0];
-        if (file) {
-            processFile(file);
+        const files = (event.target as HTMLInputElement).files;
+        if (files) {
+            for (const file of Array.from(files)) {
+                processFile(file);
+            }
         }
     }
 
     function processFile(file: File) {
         const reader = new FileReader();
         reader.onload = (e) => {
-            processJsonInput(e.target?.result as string);
+            try {
+                const rows = JSON.parse(e.target?.result as string);
+                if (Array.isArray(rows)) {
+                    addTable(file.name.replace(/\.[^/.]+$/, ""), rows);
+                } else {
+                    jsonError = `File ${file.name} does not contain a JSON array.`;
+                }
+            } catch (err) {
+                jsonError = `Invalid JSON in file ${file.name}.`;
+            }
         };
         reader.readAsText(file);
     }
@@ -108,7 +170,7 @@
 
     function executeQuery() {
         if (!query.trim()) return;
-        if (!data.length) {
+        if (!currentTable || !tables[currentTable]) {
             result = { success: false, error: "No JSON data loaded." };
             return;
         }
@@ -116,7 +178,7 @@
         queryTime = null;
         const start = performance.now();
         try {
-            const parser = new SQLParser(data);
+            const parser = new SQLParser(tables[currentTable]);
             const parsed = parser.parse(query);
             const res = parser.execute(parsed);
             result = { success: true, data: res };
@@ -149,6 +211,105 @@
         history = [];
         nextId = 1;
         saveHistory();
+    }
+
+    function copyToClipboard(text: string) {
+        navigator.clipboard.writeText(text).then(() => {
+            copyMessage = "Copied!";
+            if (copyTimeout) clearTimeout(copyTimeout);
+            copyTimeout = setTimeout(() => (copyMessage = ""), 1200);
+        });
+    }
+
+    function copySqlToClipboard() {
+        navigator.clipboard.writeText(query).then(() => {
+            copySqlMessage = "Copied!";
+            if (copySqlTimeout) clearTimeout(copySqlTimeout);
+            copySqlTimeout = setTimeout(() => (copySqlMessage = ""), 1200);
+        });
+    }
+
+    // Helper to add a new table
+    function addTable(name: string, rows: Row[]) {
+        tables = { ...tables, [name]: rows };
+        if (!currentTable) currentTable = name;
+    }
+
+    // Helper to remove a table
+    function removeTable(name: string) {
+        const { [name]: _, ...rest } = tables;
+        tables = rest;
+        if (currentTable === name) {
+            currentTable = Object.keys(tables)[0] || null;
+        }
+    }
+
+    // Preview logic for current table
+    $: previewData =
+        currentTable && tables[currentTable]
+            ? JSON.stringify(tables[currentTable], null, 2)
+            : "";
+
+    // Export helpers
+    function exportResultAsJSON() {
+        if (result && result.data) {
+            const blob = new Blob([JSON.stringify(result.data, null, 2)], {
+                type: "application/json",
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "query_result.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    }
+
+    function exportResultAsCSV() {
+        if (result && result.data && result.data.length > 0) {
+            const headers = Object.keys(result.data[0]);
+            const csvRows = [headers.join(",")];
+            for (const row of result.data) {
+                csvRows.push(
+                    headers.map((h) => JSON.stringify(row[h] ?? "")).join(","),
+                );
+            }
+            const csv = csvRows.join("\n");
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "query_result.csv";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    }
+
+    // Excel export (SheetJS)
+    async function exportResultAsExcel() {
+        if (result && result.data && result.data.length > 0) {
+            try {
+                const XLSX = await import("xlsx");
+                const ws = XLSX.utils.json_to_sheet(result.data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Results");
+                const wbout = XLSX.write(wb, {
+                    bookType: "xlsx",
+                    type: "array",
+                });
+                const blob = new Blob([wbout], {
+                    type: "application/octet-stream",
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "query_result.xlsx";
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch (e) {
+                alert("Excel export requires SheetJS (xlsx) to be installed.");
+            }
+        }
     }
 
     onMount(() => {
@@ -207,6 +368,7 @@
                     on:click={() => {
                         jsonInput = sample.value;
                         processJsonInput(sample.value);
+                        setSampleSqlsFor(sample.label);
                     }}
                 >
                     {sample.label}
@@ -264,14 +426,33 @@
         {/if}
 
         {#if previewData}
-            <div class="preview-section">
+            <div class="preview-section" style="position:relative;">
                 <h2>Preview</h2>
                 <pre class="json-preview">{previewData}</pre>
-                <p class="preview-note">
-                    Showing {data.length} total record{data.length === 1
-                        ? ""
-                        : "s"}
-                </p>
+                <div
+                    style="display:flex;justify-content:space-between;align-items:center;margin-top:0.5rem;"
+                >
+                    <p class="preview-note" style="margin:0;">
+                        Showing {(currentTable &&
+                            tables[currentTable]?.length) ||
+                            0} total record{(currentTable &&
+                            tables[currentTable]?.length) === 1
+                            ? ""
+                            : "s"}
+                    </p>
+                    <button
+                        class="clear-btn"
+                        style="margin-left:1rem;"
+                        on:click={() => copyToClipboard(previewData)}
+                    >
+                        Copy to Clipboard
+                    </button>
+                </div>
+                {#if copyMessage}
+                    <div style="color:#067800;font-weight:600;">
+                        {copyMessage}
+                    </div>
+                {/if}
             </div>
         {/if}
     </div>
@@ -291,31 +472,72 @@
             bind:value={query}
             placeholder="Enter your SQL query here..."
             rows="4"
+            style="width:100%;"
         ></textarea>
-        <div class="query-actions">
-            <button on:click={executeQuery} disabled={loading || !data.length}>
-                {#if loading}
-                    <span class="spinner"></span> Executing...
-                {:else}
-                    Execute Query
-                {/if}
+        <div
+            style="display:flex;align-items:center;justify-content:space-between;margin-top:0.3rem;gap:1rem;"
+        >
+            <div class="query-actions" style="margin:0;">
+                <button
+                    on:click={executeQuery}
+                    disabled={loading || !currentTable}
+                >
+                    {#if loading}
+                        <span class="spinner"></span> Executing...
+                    {:else}
+                        Execute Query
+                    {/if}
+                </button>
+                <button
+                    class="clear-btn"
+                    on:click={clearQuery}
+                    disabled={loading}>Clear Query</button
+                >
+                <button
+                    class="clear-btn"
+                    on:click={clearHistory}
+                    disabled={loading || history.length === 0}
+                    >Clear History</button
+                >
+            </div>
+            <button class="clear-btn" on:click={copySqlToClipboard}>
+                Copy to Clipboard
             </button>
-            <button class="clear-btn" on:click={clearQuery} disabled={loading}
-                >Clear Query</button
-            >
-            <button
-                class="clear-btn"
-                on:click={clearHistory}
-                disabled={loading || history.length === 0}>Clear History</button
-            >
         </div>
+        {#if copySqlMessage}
+            <div style="color:#067800;font-weight:600;text-align:right;">
+                {copySqlMessage}
+            </div>
+        {/if}
     </div>
 
     {#if result}
         <div class="result-section">
             <h2>Result</h2>
-            {#if result.success}
+            {#if result && result.success}
                 {#if result.data && result.data.length > 0}
+                    <div style="display:flex;gap:0.7rem;margin-bottom:0.7rem;">
+                        <button class="clear-btn" on:click={exportResultAsJSON}
+                            >Export JSON</button
+                        >
+                        <button class="clear-btn" on:click={exportResultAsCSV}
+                            >Export CSV</button
+                        >
+                        <button class="clear-btn" on:click={exportResultAsExcel}
+                            >Export Excel</button
+                        >
+                    </div>
+                    <button
+                        class="clear-btn"
+                        style="float:right;margin-top:-8px;margin-bottom:8px"
+                        on:click={() =>
+                            result &&
+                            copyToClipboard(
+                                JSON.stringify(result.data, null, 2),
+                            )}
+                    >
+                        Copy to Clipboard
+                    </button>
                     <div class="result-meta">
                         <span
                             >{result.data.length} row{result.data.length === 1
@@ -346,10 +568,15 @@
                             </tbody>
                         </table>
                     </div>
+                    {#if copyMessage}
+                        <div style="color:#067800;font-weight:600;">
+                            {copyMessage}
+                        </div>
+                    {/if}
                 {:else}
                     <p>No results found</p>
                 {/if}
-            {:else}
+            {:else if result && result.error}
                 <div class="error">
                     {result.error}
                 </div>
@@ -361,7 +588,11 @@
         <div class="history-section">
             <h2>Query History ({history.length})</h2>
             {#each history as item}
-                <div class="history-item">
+                <div
+                    class="history-item"
+                    style="cursor:pointer;"
+                    on:click={() => (selectedHistory = item)}
+                >
                     <div class="query">{item.query}</div>
                     <div class="timestamp">
                         {new Date(item.timestamp).toLocaleString()}
@@ -377,4 +608,106 @@
             {/each}
         </div>
     {/if}
+
+    {#if selectedHistory}
+        <div
+            class="modal-backdrop"
+            style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:1000;display:flex;align-items:center;justify-content:center;"
+        >
+            <div
+                class="modal-content"
+                style="background:#fff;padding:1.2rem 2.5rem 2rem 2.5rem;border-radius:12px;max-width:600px;width:90vw;box-shadow:0 4px 32px rgba(0,0,0,0.18);position:relative;overflow:auto;"
+            >
+                <button
+                    on:click={() => (selectedHistory = null)}
+                    style="position:absolute;top:1rem;right:1rem;font-size:1.5rem;background:none;border:none;cursor:pointer;color:#222;"
+                    >&times;</button
+                >
+                <h2 style="color:#067800;margin-top:0;">Query Details</h2>
+                <div style="margin-bottom:1.2rem;">
+                    <strong style="color:#067800;">SQL Query:</strong><br
+                    /><span
+                        style="font-family:'Fira Mono',monospace;color:#067800;"
+                        >{selectedHistory.query}</span
+                    >
+                </div>
+                <div style="margin-bottom:1.2rem;">
+                    <strong style="color:#067800;">Timestamp:</strong>
+                    <span style="color:#067800;"
+                        >{new Date(
+                            selectedHistory.timestamp,
+                        ).toLocaleString()}</span
+                    >
+                </div>
+                {#if selectedHistory.result.success}
+                    <div style="margin-bottom:1.2rem;">
+                        <strong style="color:#067800;">Rows Returned:</strong>
+                        <span style="color:#067800;"
+                            >{selectedHistory.result.data?.length || 0}</span
+                        >
+                    </div>
+                    <div style="margin-bottom:1.2rem;">
+                        <strong style="color:#067800;">Result Data:</strong>
+                        <pre
+                            style="background:#f7f7f7;padding:1rem;border-radius:8px;max-height:250px;overflow:auto;font-size:0.9rem;color:#067800;">{JSON.stringify(
+                                selectedHistory.result.data,
+                                null,
+                                2,
+                            )}</pre>
+                    </div>
+                {:else}
+                    <div class="error" style="margin-bottom:1.2rem;">
+                        {selectedHistory.result.error}
+                    </div>
+                {/if}
+            </div>
+        </div>
+    {/if}
+
+    {#if Object.keys(tables).length > 0}
+        <div class="table-list-section">
+            <h3>Loaded Tables</h3>
+            <ul
+                style="list-style:none;padding:0;display:flex;gap:1rem;flex-wrap:wrap;"
+            >
+                {#each Object.keys(tables) as tableName}
+                    <li style="display:flex;align-items:center;gap:0.3rem;">
+                        <button
+                            class="clear-btn"
+                            style="background:{currentTable === tableName
+                                ? '#b9f6ca'
+                                : '#e0e0e0'};color:#067800;font-weight:600;"
+                            on:click={() => (currentTable = tableName)}
+                        >
+                            {tableName}
+                        </button>
+                        <button
+                            class="clear-btn"
+                            style="background:#ffebee;color:#c62828;font-size:0.9rem;padding:0.3rem 0.7rem;"
+                            on:click={() => removeTable(tableName)}
+                            title="Remove table"
+                        >
+                            ✕
+                        </button>
+                    </li>
+                {/each}
+            </ul>
+        </div>
+    {/if}
 </main>
+
+<footer
+    style="width:100%;padding:1.2rem 0;text-align:center;background:rgba(0,61,31,0.95);color:#bdbdbd;font-size:1rem;letter-spacing:0.01em;margin-top:2rem;"
+>
+    Made with Love by <a
+        href="https://x.com/nicholaschen__"
+        target="_blank"
+        style="color:#b9f6ca;text-decoration:underline;">Nicholas Chen</a
+    >
+    &middot;
+    <a
+        href="https://github.com/your-repo"
+        target="_blank"
+        style="color:#b9f6ca;text-decoration:underline;">GitHub</a
+    >
+</footer>
