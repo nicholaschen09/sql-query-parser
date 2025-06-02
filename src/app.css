@@ -327,7 +327,7 @@ tr:nth-child(even) td {
 
 .json-preview {
     font-family: "Fira Mono", monospace;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     margin: 1rem 0;
     max-height: 350px;
     padding: 1.1rem;

@@ -19,6 +19,8 @@
     let inputMode: "file" | "raw" = "file";
     let copyMessage = "";
     let copyTimeout: ReturnType<typeof setTimeout> | null = null;
+    let copySqlMessage = "";
+    let copySqlTimeout: ReturnType<typeof setTimeout> | null = null;
 
     // Sample data for suggestions
     const sampleJsons = [
@@ -215,6 +217,14 @@
             copyMessage = "Copied!";
             if (copyTimeout) clearTimeout(copyTimeout);
             copyTimeout = setTimeout(() => (copyMessage = ""), 1200);
+        });
+    }
+
+    function copySqlToClipboard() {
+        navigator.clipboard.writeText(query).then(() => {
+            copySqlMessage = "Copied!";
+            if (copySqlTimeout) clearTimeout(copySqlTimeout);
+            copySqlTimeout = setTimeout(() => (copySqlMessage = ""), 1200);
         });
     }
 
@@ -461,24 +471,43 @@
             bind:value={query}
             placeholder="Enter your SQL query here..."
             rows="4"
+            style="width:100%;"
         ></textarea>
-        <div class="query-actions">
-            <button on:click={executeQuery} disabled={loading || !currentTable}>
-                {#if loading}
-                    <span class="spinner"></span> Executing...
-                {:else}
-                    Execute Query
-                {/if}
+        <div
+            style="display:flex;align-items:center;justify-content:space-between;margin-top:0.3rem;gap:1rem;"
+        >
+            <div class="query-actions" style="margin:0;">
+                <button
+                    on:click={executeQuery}
+                    disabled={loading || !currentTable}
+                >
+                    {#if loading}
+                        <span class="spinner"></span> Executing...
+                    {:else}
+                        Execute Query
+                    {/if}
+                </button>
+                <button
+                    class="clear-btn"
+                    on:click={clearQuery}
+                    disabled={loading}>Clear Query</button
+                >
+                <button
+                    class="clear-btn"
+                    on:click={clearHistory}
+                    disabled={loading || history.length === 0}
+                    >Clear History</button
+                >
+            </div>
+            <button class="clear-btn" on:click={copySqlToClipboard}>
+                Copy to Clipboard
             </button>
-            <button class="clear-btn" on:click={clearQuery} disabled={loading}
-                >Clear Query</button
-            >
-            <button
-                class="clear-btn"
-                on:click={clearHistory}
-                disabled={loading || history.length === 0}>Clear History</button
-            >
         </div>
+        {#if copySqlMessage}
+            <div style="color:#067800;font-weight:600;text-align:right;">
+                {copySqlMessage}
+            </div>
+        {/if}
     </div>
 
     {#if result}
