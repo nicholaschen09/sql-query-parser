@@ -375,23 +375,24 @@
                 <h2>Preview</h2>
                 <pre class="json-preview">{previewData}</pre>
                 <div
-                    style="display:flex;justify-content:flex-end;align-items:center;margin-top:0.5rem;"
+                    style="display:flex;justify-content:space-between;align-items:center;margin-top:0.5rem;"
                 >
+                    <p class="preview-note" style="margin:0;">
+                        Showing {(currentTable &&
+                            tables[currentTable]?.length) ||
+                            0} total record{(currentTable &&
+                            tables[currentTable]?.length) === 1
+                            ? ""
+                            : "s"}
+                    </p>
                     <button
                         class="clear-btn"
-                        style="margin-right:0.2rem;"
+                        style="margin-left:1rem;"
                         on:click={() => copyToClipboard(previewData)}
                     >
                         Copy to Clipboard
                     </button>
                 </div>
-                <p class="preview-note">
-                    Showing {(currentTable && tables[currentTable]?.length) ||
-                        0} total record{(currentTable &&
-                        tables[currentTable]?.length) === 1
-                        ? ""
-                        : "s"}
-                </p>
                 {#if copyMessage}
                     <div style="color:#067800;font-weight:600;">
                         {copyMessage}
