@@ -5,16 +5,30 @@ use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use parser::types::{QueryResult, Row};
 use parser::SQLParser;
 use serde::Deserialize;
+use std::collections::HashMap;
 use std::env;
 
 #[derive(Deserialize)]
 struct ExecuteRequest {
     query: String,
-    data: Vec<Row>,
+    #[serde(default)]
+    data: Option<Vec<Row>>,
+    #[serde(default)]
+    tables: Option<HashMap<String, Vec<Row>>>,
 }
 
 async fn execute_query(req: web::Json<ExecuteRequest>) -> impl Responder {
-    let parser = SQLParser::new(req.data.clone());
+    let parser = if let Some(ref tables) = req.tables {
+        SQLParser::new_with_tables(tables.clone())
+    } else if let Some(ref data) = req.data {
+        SQLParser::new(data.clone())
+    } else {
+        return HttpResponse::Ok().json(QueryResult {
+            success: false,
+            data: None,
+            error: Some("No data or tables provided".to_string()),
+        });
+    };
 
     let parsed = match parser.parse(&req.query) {
         Ok(q) => q,

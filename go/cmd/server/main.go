@@ -11,9 +11,9 @@ import (
 )
 
 type ExecuteRequest struct {
-	Query  string                        `json:"query"`
-	Data   []parser.Row                  `json:"data,omitempty"`
-	Tables map[string][]parser.Row       `json:"tables,omitempty"`
+	Query  string                  `json:"query"`
+	Data   []parser.Row            `json:"data,omitempty"`
+	Tables map[string][]parser.Row `json:"tables,omitempty"`
 }
 
 type ExecuteResponse struct {
