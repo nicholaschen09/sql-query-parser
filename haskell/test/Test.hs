@@ -134,6 +134,92 @@ testLimit = do
       Left err  -> assertFailure $ "Execute error: " ++ show err
       Right res -> assertEqual "should return 2 rows" 2 (length res)
 
+-- New feature tests
+
+testNullSupport :: Assertion
+testNullSupport = do
+  let users = [ HM.fromList [("name", VString "Alice"), ("age", VNumber 30)]
+              , HM.fromList [("name", VString "Bob"), ("age", VNumber 25)]
+              , HM.fromList [("name", VString "Charlie"), ("age", VNull)]
+              ]
+  let p = mkParserWithTables (HM.fromList [("users", users)])
+  -- IS NULL
+  case parse p "SELECT name FROM users WHERE age IS NULL" of
+    Left err -> assertFailure $ "Parse error: " ++ show err
+    Right q  -> case execute p q of
+      Left err  -> assertFailure $ "Execute error: " ++ show err
+      Right res -> do
+        assertEqual "IS NULL should return 1 row" 1 (length res)
+        assertEqual "name" (VString "Charlie") (HM.lookupDefault VNull "name" (head res))
+  -- IS NOT NULL
+  case parse p "SELECT name FROM users WHERE age IS NOT NULL" of
+    Left err -> assertFailure $ "Parse error: " ++ show err
+    Right q  -> case execute p q of
+      Left err  -> assertFailure $ "Execute error: " ++ show err
+      Right res -> assertEqual "IS NOT NULL should return 2 rows" 2 (length res)
+
+testGroupByCount :: Assertion
+testGroupByCount = do
+  let orders = [ HM.fromList [("product", VString "Widget"), ("amount", VNumber 50)]
+               , HM.fromList [("product", VString "Gadget"), ("amount", VNumber 100)]
+               , HM.fromList [("product", VString "Widget"), ("amount", VNumber 30)]
+               ]
+  let p = mkParserWithTables (HM.fromList [("orders", orders)])
+  case parse p "SELECT product, COUNT(*) AS cnt FROM orders GROUP BY product" of
+    Left err -> assertFailure $ "Parse error: " ++ show err
+    Right q  -> case execute p q of
+      Left err  -> assertFailure $ "Execute error: " ++ show err
+      Right res -> assertEqual "should return 2 groups" 2 (length res)
+
+testOrderByDesc :: Assertion
+testOrderByDesc = do
+  let p = mkParser testData
+  case parse p "SELECT state, pop FROM table ORDER BY pop DESC" of
+    Left err -> assertFailure $ "Parse error: " ++ show err
+    Right q  -> case execute p q of
+      Left err  -> assertFailure $ "Execute error: " ++ show err
+      Right res -> assertEqual "first should be California" (VString "California") (getState (head res))
+
+testComparisonOps :: Assertion
+testComparisonOps = do
+  let p = mkParser testData
+  case parse p "SELECT state FROM table WHERE pop >= 5000" of
+    Left err -> assertFailure $ "Parse error: " ++ show err
+    Right q  -> case execute p q of
+      Left err  -> assertFailure $ "Execute error: " ++ show err
+      Right res -> assertEqual ">= 5000 should return 2" 2 (length res)
+  case parse p "SELECT state FROM table WHERE pop <= 5000" of
+    Left err -> assertFailure $ "Parse error: " ++ show err
+    Right q  -> case execute p q of
+      Left err  -> assertFailure $ "Execute error: " ++ show err
+      Right res -> assertEqual "<= 5000 should return 2" 2 (length res)
+
+testLike :: Assertion
+testLike = do
+  let users = [ HM.fromList [("name", VString "Alice")]
+              , HM.fromList [("name", VString "Bob")]
+              ]
+  let p = mkParserWithTables (HM.fromList [("users", users)])
+  case parse p "SELECT name FROM users WHERE name LIKE 'A%'" of
+    Left err -> assertFailure $ "Parse error: " ++ show err
+    Right q  -> case execute p q of
+      Left err  -> assertFailure $ "Execute error: " ++ show err
+      Right res -> do
+        assertEqual "LIKE A% should return 1" 1 (length res)
+        assertEqual "name" (VString "Alice") (HM.lookupDefault VNull "name" (head res))
+
+testInList :: Assertion
+testInList = do
+  let users = [ HM.fromList [("name", VString "Alice"), ("age", VNumber 30)]
+              , HM.fromList [("name", VString "Bob"), ("age", VNumber 25)]
+              ]
+  let p = mkParserWithTables (HM.fromList [("users", users)])
+  case parse p "SELECT name FROM users WHERE age IN (25, 30)" of
+    Left err -> assertFailure $ "Parse error: " ++ show err
+    Right q  -> case execute p q of
+      Left err  -> assertFailure $ "Execute error: " ++ show err
+      Right res -> assertEqual "IN (25, 30) should return 2" 2 (length res)
+
 main :: IO ()
 main = defaultMain
   [ testCase "selects all rows with *" testSelectAll
@@ -144,4 +230,10 @@ main = defaultMain
   , testCase "returns empty for no matches" testNoMatches
   , testCase "throws on invalid SQL" testInvalidSql
   , testCase "supports LIMIT" testLimit
+  , testCase "supports NULL (IS NULL / IS NOT NULL)" testNullSupport
+  , testCase "supports GROUP BY with COUNT" testGroupByCount
+  , testCase "supports ORDER BY DESC" testOrderByDesc
+  , testCase "supports >= and <=" testComparisonOps
+  , testCase "supports LIKE" testLike
+  , testCase "supports IN value list" testInList
   ]

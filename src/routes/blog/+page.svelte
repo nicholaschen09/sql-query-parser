@@ -380,25 +380,36 @@ table: "table"</pre>
 			</section>
 
 			<section>
-				<h2>Limitations</h2>
-				<p>This parser is intentionally minimal and supports:</p>
+				<h2>Supported Features</h2>
+				<p>This parser supports a comprehensive subset of SQL:</p>
 				<ul>
-					<li>✓ SELECT queries only</li>
+					<li>✓ SELECT queries with column selection (* or specific columns)</li>
 					<li>✓ WHERE with AND, OR, parentheses</li>
-					<li>✓ Comparison operators: =, !=, &lt;, &gt;</li>
+					<li>✓ Comparison operators: =, !=, &lt;, &gt;, &lt;=, &gt;=</li>
+					<li>✓ LIKE / NOT LIKE with % and _ wildcards</li>
+					<li>✓ IN / NOT IN with value lists</li>
+					<li>✓ Subqueries: WHERE col IN (SELECT ...)</li>
+					<li>✓ IS NULL / IS NOT NULL</li>
+					<li>✓ JOINs: INNER JOIN, LEFT JOIN, RIGHT JOIN with ON</li>
+					<li>✓ GROUP BY with HAVING</li>
+					<li>✓ Aggregations: COUNT, SUM, AVG, MIN, MAX</li>
+					<li>✓ ORDER BY (ASC / DESC)</li>
 					<li>✓ LIMIT clause</li>
-					<li>✓ Column selection (* or specific columns)</li>
+					<li>✓ Nested object access via dot notation (e.g. address.city)</li>
+					<li>✓ Multi-word string literals (e.g. 'New York')</li>
+					<li>✓ Column-to-column comparisons</li>
 				</ul>
 				<p>
 					It does <strong>not</strong> support:
 				</p>
 				<ul>
-					<li>✗ JOINs</li>
-					<li>✗ GROUP BY</li>
-					<li>✗ Subqueries</li>
-					<li>✗ Aggregations (SUM, COUNT, etc.)</li>
-					<li>✗ NULL values</li>
-					<li>✗ Nested objects or arrays</li>
+					<li>✗ INSERT, UPDATE, DELETE statements</li>
+					<li>✗ UNION / INTERSECT</li>
+					<li>✗ SELECT DISTINCT</li>
+					<li>✗ Arithmetic expressions (e.g. price * quantity)</li>
+					<li>✗ String functions (UPPER, LOWER, CONCAT, etc.)</li>
+					<li>✗ BETWEEN operator</li>
+					<li>✗ Escaped quotes in string literals</li>
 				</ul>
 			</section>
 		</article>

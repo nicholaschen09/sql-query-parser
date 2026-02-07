@@ -536,7 +536,7 @@
 										class="dropdown-option"
 										class:active={parserType === key}
 										on:click={() => {
-											parserType = key;
+											parserType = key as 'typescript' | 'go' | 'rust' | 'haskell';
 											parserDropdownOpen = false;
 										}}
 									>
