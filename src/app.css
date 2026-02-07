@@ -6,7 +6,7 @@
 
 html,
 body {
-    background: white;
+    background: #fafafa;
     color: black;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
     font-size: 14px;
@@ -69,7 +69,7 @@ p {
 }
 
 .query-section {
-    background: white;
+    background: #fafafa;
     border: 1px solid black;
     padding: 1rem;
     margin-bottom: 2rem;
@@ -88,7 +88,7 @@ p {
     font-size: 12px;
     font-weight: 600;
     padding: 0.5rem;
-    background: white;
+    background: #fafafa;
     color: black;
     border: 1px solid black;
     border-radius: 0;
@@ -139,7 +139,7 @@ button:hover:not(:disabled):not(.dropdown-button):not(.dropdown-option):not(.ico
 }
 
 .clear-btn {
-    background: white;
+    background: #fafafa;
     color: black;
     border: 1px solid black;
 }
@@ -160,7 +160,7 @@ button:hover:not(:disabled):not(.dropdown-button):not(.dropdown-option):not(.ico
     align-items: center;
     justify-content: center;
     padding: 0.35rem;
-    background: white;
+    background: #fafafa;
     color: black;
     border: 1px solid black;
     border-radius: 0;
@@ -186,7 +186,7 @@ button:hover:not(:disabled):not(.dropdown-button):not(.dropdown-option):not(.ico
 }
 
 .modal-content {
-    background: white;
+    background: #fafafa;
     padding: 1.2rem 2.5rem 2rem 2.5rem;
     border: 1px solid black;
     max-width: 600px;
@@ -215,7 +215,7 @@ button:hover:not(:disabled):not(.dropdown-button):not(.dropdown-option):not(.ico
 
 .result-section {
     margin-top: 2rem;
-    background: white;
+    background: #fafafa;
     border: 1px solid black;
     padding: 1rem;
     margin-bottom: 2rem;
@@ -230,7 +230,7 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 0;
-    background: white;
+    background: #fafafa;
 }
 
 th,
@@ -242,18 +242,18 @@ td {
 }
 
 th {
-    background: white;
+    background: #fafafa;
     color: black;
     font-weight: 400;
 }
 
 tr:nth-child(even) td {
-    background: white;
+    background: #fafafa;
 }
 
 .error {
     color: black;
-    background: white;
+    background: #fafafa;
     padding: 0.5rem;
     border: 1px solid black;
     margin-top: 1rem;
@@ -266,7 +266,7 @@ tr:nth-child(even) td {
 
 .history-item {
     border: 1px solid black;
-    background: white;
+    background: #fafafa;
     padding: 1rem;
     margin-bottom: 1rem;
     cursor: pointer;
@@ -298,7 +298,7 @@ tr:nth-child(even) td {
 
 .history-item .error {
     color: black;
-    background: white;
+    background: #fafafa;
     border: 1px solid black;
     padding: 0.5rem;
     margin-top: 0.5rem;
@@ -313,7 +313,7 @@ tr:nth-child(even) td {
     border: 1px dashed black;
     padding: 2rem;
     text-align: center;
-    background: white;
+    background: #fafafa;
     cursor: pointer;
     min-height: 250px;
     display: flex;
@@ -358,7 +358,7 @@ tr:nth-child(even) td {
 
 .preview-section {
     margin-top: 1.5rem;
-    background: white;
+    background: #fafafa;
     padding: 1rem;
 }
 
@@ -369,7 +369,7 @@ tr:nth-child(even) td {
     margin: 1rem 0;
     max-height: 300px;
     padding: 0.5rem;
-    background: white;
+    background: #fafafa;
     color: black;
     border: 1px solid black;
     overflow-x: auto;
@@ -401,7 +401,7 @@ tr:nth-child(even) td {
 
 .toggle-btn {
     flex: 1;
-    background: white;
+    background: #fafafa;
     color: black;
     border: 1px solid black;
     padding: 0.5rem;
@@ -419,7 +419,7 @@ tr:nth-child(even) td {
 }
 
 .raw-json-section {
-    background: white;
+    background: #fafafa;
     padding: 1rem;
     margin-bottom: 1rem;
     border: 1px solid black;
@@ -431,7 +431,7 @@ tr:nth-child(even) td {
 .raw-json-section textarea {
     font-size: 12px;
     line-height: 1.5;
-    background: white;
+    background: #fafafa;
     border: 1px solid black;
     padding: 0.5rem;
     color: black;
@@ -447,7 +447,7 @@ tr:nth-child(even) td {
     gap: 0.5rem;
     flex-wrap: wrap;
     padding: 0.5rem;
-    background: white;
+    background: #fafafa;
     border: 1px solid black;
 }
 
@@ -458,7 +458,7 @@ tr:nth-child(even) td {
 }
 
 .sample-suggestions button {
-    background: white;
+    background: #fafafa;
     color: black;
     border: 1px solid black;
     padding: 0.25rem 0.5rem;
@@ -472,7 +472,7 @@ tr:nth-child(even) td {
 }
 
 .app-summary-card {
-    background: white;
+    background: #fafafa;
     border: 1px solid black;
     padding: 1rem;
     margin-bottom: 2rem;
@@ -501,7 +501,7 @@ input[type="text"] {
     padding: 0.25rem 0.5rem;
     border: 1px solid black;
     border-radius: 0;
-    background: white;
+    background: #fafafa;
     color: black;
     font-size: 12px;
     font-family: inherit;
@@ -521,7 +521,7 @@ input[type="text"]:focus {
     padding: 0.5rem;
     border: 1px solid black;
     border-radius: 0;
-    background: white;
+    background: #fafafa;
     color: black;
     font-size: 12px;
     font-family: inherit;
@@ -552,7 +552,7 @@ input[type="text"]:focus {
     top: 100%;
     left: 0;
     right: 0;
-    background: white;
+    background: #fafafa;
     border: 1px solid black;
     border-top: none;
     z-index: 1000;
@@ -564,7 +564,7 @@ input[type="text"]:focus {
     padding: 0.5rem;
     border: none;
     border-bottom: 1px solid black;
-    background: white;
+    background: #fafafa;
     color: black;
     font-size: 12px;
     font-family: inherit;

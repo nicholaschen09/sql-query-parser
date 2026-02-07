@@ -407,6 +407,7 @@
             <span>Try sample JSON:</span>
             {#each sampleJsons as sample}
                 <button
+                    class="clear-btn"
                     type="button"
                     on:click={() => {
                         jsonInput = sample.value;
@@ -516,7 +517,7 @@
         <div class="sample-suggestions">
             <span>Try sample SQL:</span>
             {#each sampleSqls as sample}
-                <button type="button" on:click={() => (query = sample.value)}>
+                <button class="clear-btn" type="button" on:click={() => (query = sample.value)}>
                     {sample.label}
                 </button>
             {/each}
