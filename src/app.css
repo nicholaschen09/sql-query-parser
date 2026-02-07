@@ -130,7 +130,7 @@ button:disabled,
     cursor: not-allowed;
 }
 
-button:hover:not(:disabled) {
+button:hover:not(:disabled):not(.dropdown-button):not(.dropdown-option):not(.icon-btn):not(.clear-btn) {
     background: #333;
 }
 
