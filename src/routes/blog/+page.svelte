@@ -389,8 +389,7 @@ table: "table"</pre>
     }
 
     .blog-content {
-        max-width: 700px;
-        margin: 0 auto;
+        width: 100%;
     }
 
     .blog-content section {
@@ -478,9 +477,8 @@ table: "table"</pre>
 
     .blog-image {
         display: block;
-        max-width: 700px;
         width: 100%;
-        margin: 1.5rem auto;
+        margin: 1.5rem 0;
         border: 1px solid black;
         padding: 1rem;
         background: #fafafa;
