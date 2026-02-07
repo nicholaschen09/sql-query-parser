@@ -22,8 +22,18 @@
     let copySqlMessage = "";
     let copySqlTimeout: ReturnType<typeof setTimeout> | null = null;
     let selectedHistory: QueryHistory | null = null;
-    let parserType: "typescript" | "go" = "typescript";
+    let parserType: "typescript" | "go" | "rust" | "haskell" = "typescript";
     let goApiUrl = "http://localhost:8080";
+    let rustApiUrl = "http://localhost:8081";
+    let haskellApiUrl = "http://localhost:8082";
+    let parserDropdownOpen = false;
+
+    const parserLabels: Record<string, string> = {
+        typescript: "TypeScript (Client-side)",
+        go: "Go (Server-side)",
+        rust: "Rust (Server-side)",
+        haskell: "Haskell (Server-side)",
+    };
 
     // Sample data for suggestions
     const sampleJsons = [
@@ -181,9 +191,19 @@
         const start = performance.now();
         
         try {
-            if (parserType === "go") {
-                // Use Go parser via API
-                const response = await fetch(`${goApiUrl}/execute`, {
+            if (parserType === "typescript") {
+                // Use TypeScript parser
+                const parser = new SQLParser(tables[currentTable]);
+                const parsed = parser.parse(query);
+                const res = parser.execute(parsed);
+                result = { success: true, data: res };
+            } else {
+                // Use server-side parser via API
+                let apiUrl = goApiUrl;
+                if (parserType === "rust") apiUrl = rustApiUrl;
+                if (parserType === "haskell") apiUrl = haskellApiUrl;
+
+                const response = await fetch(`${apiUrl}/execute`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -199,22 +219,16 @@
                     throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
                 }
                 
-                const goResult = await response.json();
-                if (!goResult.success && goResult.error) {
-                    throw new Error(goResult.error);
+                const serverResult = await response.json();
+                if (!serverResult.success && serverResult.error) {
+                    throw new Error(serverResult.error);
                 }
                 
                 result = {
-                    success: goResult.success,
-                    data: goResult.data,
-                    error: goResult.error,
+                    success: serverResult.success,
+                    data: serverResult.data,
+                    error: serverResult.error,
                 };
-            } else {
-                // Use TypeScript parser
-                const parser = new SQLParser(tables[currentTable]);
-                const parsed = parser.parse(query);
-                const res = parser.execute(parsed);
-                result = { success: true, data: res };
             }
             
             queryTime = Math.round(performance.now() - start);
@@ -223,9 +237,9 @@
             
             // Provide helpful error messages for common issues
             if (errorMessage.includes("Failed to fetch") || errorMessage.includes("NetworkError")) {
-                errorMessage = `Cannot connect to Go server at ${goApiUrl}. Make sure the Go server is running (cd go && go run cmd/server/main.go)`;
+                errorMessage = `Cannot connect to ${parserType} server. Make sure the server is running.`;
             } else if (errorMessage.includes("HTTP")) {
-                errorMessage = `Go server error: ${errorMessage}`;
+                errorMessage = `Server error: ${errorMessage}`;
             }
             
             result = {
@@ -470,11 +484,11 @@
                             : "s"}
                     </p>
                     <button
-                        class="clear-btn"
-                        style="margin-left:1rem;"
+                        class="icon-btn"
+                        title="Copy to Clipboard"
                         on:click={() => copyToClipboard(previewData)}
                     >
-                        Copy to Clipboard
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                     </button>
                 </div>
                 {#if copyMessage}
@@ -498,13 +512,31 @@
         </div>
         <h2>SQL Query</h2>
         <div style="margin-bottom: 0.5rem;">
-            <label style="display: flex; align-items: center; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
                 <span>Parser:</span>
-                <select bind:value={parserType}>
-                    <option value="typescript">TypeScript (Client-side)</option>
-                    <option value="go">Go (Server-side)</option>
-                </select>
-            </label>
+                <div class="custom-dropdown">
+                    <button
+                        class="dropdown-button"
+                        on:click={() => (parserDropdownOpen = !parserDropdownOpen)}
+                    >
+                        {parserLabels[parserType]}
+                        <span class="dropdown-arrow">{parserDropdownOpen ? "▲" : "▼"}</span>
+                    </button>
+                    {#if parserDropdownOpen}
+                        <div class="dropdown-menu">
+                            {#each Object.entries(parserLabels) as [key, label]}
+                                <button
+                                    class="dropdown-option"
+                                    class:active={parserType === key}
+                                    on:click={() => { parserType = key; parserDropdownOpen = false; }}
+                                >
+                                    {label}
+                                </button>
+                            {/each}
+                        </div>
+                    {/if}
+                </div>
+            </div>
             {#if parserType === "go"}
                 <div style="margin-top: 0.3rem;">
                     <label style="display: flex; align-items: center; gap: 0.5rem;">
@@ -513,6 +545,30 @@
                             type="text"
                             bind:value={goApiUrl}
                             placeholder="http://localhost:8080"
+                            style="flex: 1; max-width: 300px;"
+                        />
+                    </label>
+                </div>
+            {:else if parserType === "rust"}
+                <div style="margin-top: 0.3rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span>Rust API URL:</span>
+                        <input
+                            type="text"
+                            bind:value={rustApiUrl}
+                            placeholder="http://localhost:8081"
+                            style="flex: 1; max-width: 300px;"
+                        />
+                    </label>
+                </div>
+            {:else if parserType === "haskell"}
+                <div style="margin-top: 0.3rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span>Haskell API URL:</span>
+                        <input
+                            type="text"
+                            bind:value={haskellApiUrl}
+                            placeholder="http://localhost:8082"
                             style="flex: 1; max-width: 300px;"
                         />
                     </label>
@@ -552,8 +608,8 @@
                     >Clear History</button
                 >
             </div>
-            <button class="clear-btn" on:click={copySqlToClipboard}>
-                Copy to Clipboard
+            <button class="icon-btn" title="Copy to Clipboard" on:click={copySqlToClipboard}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             </button>
         </div>
         {#if copySqlMessage}
@@ -579,17 +635,7 @@
                             >Export Excel</button
                         >
                     </div>
-                    <button
-                        class="clear-btn"
-                        style="float:right;margin-top:-8px;margin-bottom:8px"
-                        on:click={() =>
-                            result &&
-                            copyToClipboard(
-                                JSON.stringify(result.data, null, 2),
-                            )}
-                    >
-                        Copy to Clipboard
-                    </button>
+
                     <div class="result-meta">
                         <span
                             >{result.data.length} row{result.data.length === 1
@@ -620,11 +666,22 @@
                             </tbody>
                         </table>
                     </div>
-                    {#if copyMessage}
-                        <div style="color:#067800;font-weight:600;">
-                            {copyMessage}
-                        </div>
-                    {/if}
+                    <div style="display:flex;align-items:center;justify-content:flex-end;gap:0.5rem;margin-top:0.5rem;">
+                        {#if copyMessage}
+                            <span>{copyMessage}</span>
+                        {/if}
+                        <button
+                            class="icon-btn"
+                            title="Copy to Clipboard"
+                            on:click={() =>
+                                result &&
+                                copyToClipboard(
+                                    JSON.stringify(result.data, null, 2),
+                                )}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        </button>
+                    </div>
                 {:else}
                     <p>No results found</p>
                 {/if}
