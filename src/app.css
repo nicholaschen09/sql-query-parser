@@ -269,6 +269,12 @@ tr:nth-child(even) td {
     background: white;
     padding: 1rem;
     margin-bottom: 1rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.history-item:hover {
+    background: #f7f7f7;
 }
 
 .history-item .query {
@@ -512,7 +518,7 @@ input[type="text"]:focus {
 }
 
 .dropdown-button {
-    padding: 0.25rem 0.5rem;
+    padding: 0.5rem;
     border: 1px solid black;
     border-radius: 0;
     background: white;
@@ -570,12 +576,12 @@ input[type="text"]:focus {
     border-bottom: none;
 }
 
-.dropdown-option:hover {
-    background: #f7f7f7;
+.dropdown-option:hover:not(:disabled) {
+    background: #f7f7f7 !important;
 }
 
 .dropdown-option.active {
-    background: #f2f2f2;
+    background: #f2f2f2 !important;
     color: black;
 }
 
