@@ -876,11 +876,16 @@ func (p *SQLParser) evaluateCondition(row Row, condition *Condition) bool {
 	var leftVal interface{}
 	switch v := condition.Left.(type) {
 	case string:
-		resolved := p.resolveValue(row, v)
-		if resolved != nil {
-			leftVal = resolved
+		// Check direct key first to handle nil values properly
+		if val, exists := row[v]; exists {
+			leftVal = val // can be nil for NULL support
 		} else {
-			leftVal = v
+			resolved := p.resolveValue(row, v)
+			if resolved != nil {
+				leftVal = resolved
+			} else {
+				leftVal = v // literal string fallback
+			}
 		}
 	case *Condition:
 		leftVal = p.evaluateCondition(row, v)
@@ -970,11 +975,15 @@ func (p *SQLParser) evaluateCondition(row Row, condition *Condition) bool {
 		var rightVal interface{}
 		switch v := condition.Right.(type) {
 		case string:
-			resolved := p.resolveValue(row, v)
-			if resolved != nil {
-				rightVal = resolved
+			if val, exists := row[v]; exists {
+				rightVal = val
 			} else {
-				rightVal = v
+				resolved := p.resolveValue(row, v)
+				if resolved != nil {
+					rightVal = resolved
+				} else {
+					rightVal = v
+				}
 			}
 		default:
 			rightVal = v
@@ -1042,16 +1051,19 @@ func (p *SQLParser) resolveValue(row Row, path string) interface{} {
 			}
 		}
 
-		// Full traversal
-		var current interface{} = map[string]interface{}(row)
-		for _, part := range parts {
-			m, ok := current.(map[string]interface{})
-			if !ok {
-				return nil
+		// Full traversal from root
+		var current interface{}
+		if val, ok := row[parts[0]]; ok {
+			current = val
+			for _, part := range parts[1:] {
+				m, ok := current.(map[string]interface{})
+				if !ok {
+					return nil
+				}
+				current = m[part]
 			}
-			current = m[part]
+			return current
 		}
-		return current
 	}
 
 	return nil
