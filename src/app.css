@@ -13,12 +13,36 @@ body {
     line-height: 1.5;
     min-height: 100vh;
     width: 100vw;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+body > div {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    flex: 1;
+}
+
+.page-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 .container {
     max-width: 900px;
+    width: 100%;
     margin: 0 auto;
     padding: 2rem;
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
 }
 
 h1 {
@@ -498,4 +522,18 @@ label {
     .sample-suggestions button {
         width: 100%;
     }
+}
+
+footer {
+    width: 100%;
+    padding: 1rem 0;
+    text-align: center;
+    border-top: 1px solid black;
+    margin-top: auto;
+    flex-shrink: 0;
+}
+
+footer a {
+    color: black;
+    text-decoration: underline;
 }

@@ -363,6 +363,7 @@
     });
 </script>
 
+<div class="page-wrapper">
 <main class="container">
     <h1>SQL Query Parser</h1>
 
@@ -741,7 +742,7 @@
     {/if}
 </main>
 
-<footer style="width:100%;padding:1rem 0;text-align:center;border-top:1px solid black;margin-top:2rem;">
+<footer>
     Made by <a
         href="https://x.com/nicholaschen__"
         target="_blank"
@@ -754,3 +755,4 @@
         style="color:black;text-decoration:underline;">GitHub</a
     >
 </footer>
+</div>
