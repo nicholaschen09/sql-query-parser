@@ -455,7 +455,7 @@
             </div>
         {:else}
             <div class="raw-json-section">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
                     <h2 style="margin:0;">JSON Input</h2>
                     {#if jsonInput}
                         <button class="clear-btn" on:click={clearJsonInput}>Clear Input</button>
