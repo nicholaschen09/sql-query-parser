@@ -530,6 +530,7 @@
         >
             <div class="query-actions" style="margin:0;">
                 <button
+                    class="primary-btn"
                     on:click={executeQuery}
                     disabled={loading || !currentTable}
                 >
