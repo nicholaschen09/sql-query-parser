@@ -379,6 +379,7 @@ tr:nth-child(even) td {
 	margin-top: 1.5rem;
 	background: #fafafa;
 	padding: 1rem;
+	border: 1px solid black;
 }
 
 .json-preview {
