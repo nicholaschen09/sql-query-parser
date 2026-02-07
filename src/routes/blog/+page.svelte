@@ -150,13 +150,20 @@
                 Let's trace through a simple query:
             </p>
             <pre class="code-block">SELECT state, pop FROM table WHERE pop > 5000</pre>
-            <ol>
-                <li><strong>Tokenize:</strong> ["SELECT", "state", ",", "pop", "FROM", "table", "WHERE", "pop", ">", "5000"]</li>
-                <li><strong>Parse columns:</strong> ["state", "pop"]</li>
-                <li><strong>Parse table:</strong> "table"</li>
-                <li><strong>Parse WHERE:</strong> {'{'}left: "pop", operator: "&gt;", right: 5000{'}'}</li>
-                <li><strong>Execute:</strong> Filter rows where pop > 5000, then select only state and pop columns</li>
-            </ol>
+            <p><strong>Step 1 — Tokenize:</strong></p>
+            <pre class="code-block">["SELECT", "state", ",", "pop", "FROM", "table", "WHERE", "pop", ">", "5000"]</pre>
+            <p><strong>Step 2 — Parse columns:</strong></p>
+            <pre class="code-block">["state", "pop"]</pre>
+            <p><strong>Step 3 — Parse table:</strong></p>
+            <pre class="code-block">"table"</pre>
+            <p><strong>Step 4 — Parse WHERE:</strong></p>
+            <pre class="code-block">{'{'}
+  left: "pop",
+  operator: ">",
+  right: 5000
+{'}'}</pre>
+            <p><strong>Step 5 — Execute:</strong></p>
+            <p>Filter rows where <code>pop > 5000</code>, then select only the <code>state</code> and <code>pop</code> columns.</p>
         </section>
     </article>
 </main>
@@ -186,30 +193,31 @@
     }
 
     .blog-content section {
-        margin-bottom: 2rem;
+        margin-bottom: 2.5rem;
     }
 
     .blog-content h2 {
-        font-size: 18px;
-        font-weight: 400;
-        margin-bottom: 0.5rem;
-        margin-top: 1.5rem;
+        font-size: 20px;
+        font-weight: 500;
+        margin-bottom: 0.75rem;
+        margin-top: 2rem;
     }
 
     .blog-content h3 {
-        font-size: 14px;
-        font-weight: 400;
-        margin-top: 1rem;
+        font-size: 16px;
+        font-weight: 500;
+        margin-top: 1.25rem;
         margin-bottom: 0.5rem;
     }
 
     .blog-content p {
+        font-size: 15px;
         margin-bottom: 1rem;
-        line-height: 1.6;
+        line-height: 1.7;
     }
 
     .blog-content .intro {
-        font-size: 14px;
+        font-size: 16px;
         margin-bottom: 2rem;
     }
 
@@ -220,22 +228,34 @@
     }
 
     .blog-content li {
+        font-size: 15px;
         margin-bottom: 0.5rem;
-        line-height: 1.6;
+        line-height: 1.7;
+    }
+
+    .blog-content li code,
+    .blog-content p code {
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        background: #f0f0f0;
+        padding: 0.15rem 0.4rem;
+        border: 1px solid #ddd;
     }
 
     .code-block {
-        background: white;
+        background: #fafafa;
         border: 1px solid black;
-        padding: 1rem;
+        padding: 1.25rem 1.5rem;
         font-family: 'Courier New', monospace;
-        font-size: 11px;
+        font-size: 15px;
+        line-height: 1.7;
         overflow-x: auto;
-        margin: 1rem 0;
+        margin: 1.25rem 0;
         white-space: pre;
+        letter-spacing: 0.3px;
     }
 
     .blog-content strong {
-        font-weight: 400;
+        font-weight: 600;
     }
 </style>
