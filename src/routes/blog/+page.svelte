@@ -18,26 +18,75 @@
         <section>
             <h2>Architecture Overview</h2>
             <p>
-                The parser consists of two main phases: <strong>parsing</strong> and <strong>execution</strong>. 
-                The parsing phase converts a SQL string into an abstract syntax tree (AST), and the execution phase 
-                runs that AST against the provided JSON data.
+                The parser works as a pipeline with three stages: <strong>tokenization</strong>, <strong>parsing</strong>, 
+                and <strong>execution</strong>. A SQL string goes in, tokens come out of stage one, an abstract syntax 
+                tree (AST) comes out of stage two, and query results come out of stage three.
             </p>
             <img src="/parser.png" alt="Parser architecture: grammar flows into parser generator, which produces a parser that takes tokens and outputs an intermediate representation" class="blog-image" />
         </section>
 
         <section>
-            <h2>What is an AST?</h2>
+            <h2>1. Tokenization</h2>
             <p>
-                An <strong>Abstract Syntax Tree</strong> (AST) is a tree-shaped data structure that represents the 
-                structure of code after parsing. Instead of working with a flat string, the parser converts the query 
-                into a tree of nested objects that the executor can walk through.
+                The first thing the parser does is break the raw SQL string into tokens. The tokenizer:
+            </p>
+            <ul>
+                <li>Adds spaces around parentheses and commas for easier splitting</li>
+                <li>Splits the query by whitespace</li>
+                <li>Removes trailing semicolons</li>
+                <li>Filters out empty tokens</li>
+            </ul>
+            <pre class="code-block">SELECT state, pop FROM table WHERE pop > 5000
+// Becomes: ["SELECT", "state", ",", "pop", "FROM", "table", "WHERE", "pop", ">", "5000"]</pre>
+            <img src="/tokenization.png" alt="Tokenization: sentences are broken down into individual word tokens" class="blog-image" />
+        </section>
+
+        <section>
+            <h2>2. Parsing the SELECT Statement</h2>
+            <p>
+                Next, the parser walks through the token array and identifies the key components of the query:
+            </p>
+            <ul>
+                <li><strong>SELECT</strong> — Must be the first token, otherwise the parser throws an error</li>
+                <li><strong>Columns</strong> — Everything between SELECT and FROM (supports <code>*</code> or a comma-separated list)</li>
+                <li><strong>FROM</strong> — Required keyword that separates columns from the table name</li>
+                <li><strong>Table name</strong> — The token immediately after FROM</li>
+                <li><strong>WHERE</strong> — Optional condition clause, parsed next if present</li>
+                <li><strong>LIMIT</strong> — Optional row limit, parsed last if present</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>3. Parsing WHERE Conditions</h2>
+            <p>
+                If a WHERE keyword is found, the parser uses <strong>recursive descent parsing</strong> to build a 
+                tree of conditions. Three functions call each other to handle operator precedence:
+            </p>
+            <ul>
+                <li><strong>parseConditionRecursive</strong> — handles <code>OR</code> (lowest precedence, evaluated last)</li>
+                <li><strong>parseAnd</strong> — handles <code>AND</code> (higher precedence)</li>
+                <li><strong>parseOperand</strong> — handles comparisons (<code>=</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>) and parenthesized groups (highest precedence)</li>
+            </ul>
+            <pre class="code-block">pop > 3000 OR (region = 'West' AND pop > 500)
+// Parsed as: OR(
+//   pop > 3000,
+//   AND(region = 'West', pop > 500)
+// )</pre>
+        </section>
+
+        <section>
+            <h2>4. The AST — What Parsing Produces</h2>
+            <p>
+                The output of steps 2 and 3 is an <strong>Abstract Syntax Tree</strong> (AST) — a tree-shaped data 
+                structure that represents the query's structure. Instead of a flat string, the parser has now produced 
+                a tree of nested objects that the executor can walk through.
             </p>
             <p>
-                For example, a flat SQL string like this:
+                A flat SQL string like this:
             </p>
             <pre class="code-block">SELECT state, pop FROM table WHERE pop > 5000 AND region = 'West'</pre>
             <p>
-                Gets transformed into a structured tree:
+                Has been transformed into this structured tree:
             </p>
             <pre class="code-block">SelectQuery
 ├── type: "SELECT"
@@ -63,7 +112,7 @@
                 bottom-up — it evaluates the leaf nodes, then combines results as it moves back up to the root.
             </p>
             <p>
-                In the parser, each node is a <code>Condition</code> object with <code>{'{'}left, operator, right{'}'}</code> where 
+                In the code, each node is a <code>Condition</code> object with <code>{'{'}left, operator, right{'}'}</code> where 
                 <code>left</code> and <code>right</code> can themselves be <code>Condition</code> objects. That 
                 recursion is what makes it a tree.
             </p>
@@ -71,77 +120,62 @@
         </section>
 
         <section>
-            <h2>1. Tokenization</h2>
+            <h2>5. Execution</h2>
             <p>
-                The first step is breaking down the SQL query into tokens. The parser:
-            </p>
-            <ul>
-                <li>Adds spaces around parentheses and commas for easier splitting</li>
-                <li>Splits the query by whitespace</li>
-                <li>Removes trailing semicolons</li>
-                <li>Filters out empty tokens</li>
-            </ul>
-            <pre class="code-block">SELECT state, pop FROM table WHERE pop > 5000
-// Becomes: ["SELECT", "state", ",", "pop", "FROM", "table", "WHERE", "pop", ">", "5000"]</pre>
-            <img src="/tokenization.png" alt="Tokenization: sentences are broken down into individual word tokens" class="blog-image" />
-        </section>
-
-        <section>
-            <h2>2. Parsing the SELECT Statement</h2>
-            <p>
-                The parser identifies key components:
-            </p>
-            <ul>
-                <li><strong>SELECT</strong> - Must be the first token</li>
-                <li><strong>Columns</strong> - Everything between SELECT and FROM (supports * or comma-separated list)</li>
-                <li><strong>FROM</strong> - Required keyword</li>
-                <li><strong>Table name</strong> - The token immediately after FROM</li>
-                <li><strong>WHERE</strong> - Optional condition clause</li>
-                <li><strong>LIMIT</strong> - Optional row limit</li>
-            </ul>
-        </section>
-
-        <section>
-            <h2>3. Parsing WHERE Conditions</h2>
-            <p>
-                The WHERE clause uses recursive descent parsing to handle operator precedence:
-            </p>
-            <ul>
-                <li><strong>OR</strong> has the lowest precedence (evaluated last)</li>
-                <li><strong>AND</strong> has higher precedence</li>
-                <li><strong>Parentheses</strong> override precedence</li>
-                <li><strong>Comparison operators</strong> (=, !=, &lt;, &gt;) have the highest precedence</li>
-            </ul>
-            <pre class="code-block">pop > 3000 OR (region = 'West' AND pop > 500)
-// Parsed as: OR(
-//   pop > 3000,
-//   AND(region = 'West', pop > 500)
-// )</pre>
-        </section>
-
-        <section>
-            <h2>4. Execution</h2>
-            <p>
-                Once parsed, the query is executed against the data:
+                Now the executor takes the AST and runs it against the JSON data. It performs three operations in order:
             </p>
             <ol>
-                <li><strong>Filter</strong> - Apply WHERE conditions row by row</li>
-                <li><strong>Project</strong> - Select only requested columns (or all with *)</li>
-                <li><strong>Limit</strong> - Truncate results to the specified number</li>
+                <li><strong>Filter</strong> — Apply WHERE conditions row by row, keeping only matching rows</li>
+                <li><strong>Project</strong> — Select only the requested columns (or keep all columns with <code>*</code>)</li>
+                <li><strong>Limit</strong> — Truncate results to the specified number of rows</li>
             </ol>
         </section>
 
         <section>
-            <h2>5. Condition Evaluation</h2>
+            <h2>6. Condition Evaluation</h2>
             <p>
-                Conditions are evaluated recursively:
+                During the filter step, each row is tested against the WHERE condition tree. The executor walks 
+                the AST recursively:
             </p>
             <ul>
-                <li>Logical operators (AND/OR) evaluate left and right sides</li>
-                <li>Comparison operators compare values (supports column-to-column comparisons)</li>
-                <li>String literals are extracted from single quotes</li>
-                <li>Numbers are parsed automatically</li>
+                <li>If the node is <code>AND</code> or <code>OR</code> — evaluate both child nodes, combine with <code>&amp;&amp;</code> or <code>||</code></li>
+                <li>If the node is a comparison (<code>=</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>) — look up the column value from the row and compare</li>
+                <li>String literals (in single quotes) are extracted as strings</li>
+                <li>Numeric values are parsed automatically</li>
+                <li>Column-to-column comparisons are also supported</li>
             </ul>
+            <p>
+                The result bubbles back up the tree: each leaf returns <code>true</code> or <code>false</code>, 
+                and the logical operators combine them until the root node produces a final boolean for that row.
+            </p>
+        </section>
+
+        <section>
+            <h2>Example Walkthrough</h2>
+            <p>
+                Let's trace through a complete query to see all six steps in action:
+            </p>
+            <pre class="code-block">SELECT state, pop FROM table WHERE pop > 5000</pre>
+            <p><strong>Step 1 — Tokenize:</strong></p>
+            <pre class="code-block">["SELECT", "state", ",", "pop", "FROM", "table", "WHERE", "pop", ">", "5000"]</pre>
+            <p><strong>Step 2 — Parse SELECT:</strong></p>
+            <pre class="code-block">columns: ["state", "pop"]
+table: "table"</pre>
+            <p><strong>Step 3 — Parse WHERE:</strong></p>
+            <pre class="code-block">{'{'}
+  left: "pop",
+  operator: ">",
+  right: 5000
+{'}'}</pre>
+            <p><strong>Step 4 — AST complete:</strong></p>
+            <pre class="code-block">{'{'}
+  type: "SELECT",
+  columns: ["state", "pop"],
+  table: "table",
+  where: {'{'} left: "pop", operator: ">", right: 5000 {'}'}
+{'}'}</pre>
+            <p><strong>Step 5 — Execute:</strong></p>
+            <p>For each row, check if <code>pop > 5000</code>. Keep matching rows, then select only the <code>state</code> and <code>pop</code> columns.</p>
         </section>
 
         <section>
@@ -153,7 +187,7 @@
             <ul>
                 <li>Recursive descent parsing for WHERE clauses</li>
                 <li>Array methods (filter, map, slice) for data manipulation</li>
-                <li>No external dependencies - pure JavaScript</li>
+                <li>No external dependencies — pure JavaScript</li>
             </ul>
 
             <h3>Go Parser</h3>
@@ -190,28 +224,6 @@
                 <li>✗ NULL values</li>
                 <li>✗ Nested objects or arrays</li>
             </ul>
-        </section>
-
-        <section>
-            <h2>Example Walkthrough</h2>
-            <p>
-                Let's trace through a simple query:
-            </p>
-            <pre class="code-block">SELECT state, pop FROM table WHERE pop > 5000</pre>
-            <p><strong>Step 1 — Tokenize:</strong></p>
-            <pre class="code-block">["SELECT", "state", ",", "pop", "FROM", "table", "WHERE", "pop", ">", "5000"]</pre>
-            <p><strong>Step 2 — Parse columns:</strong></p>
-            <pre class="code-block">["state", "pop"]</pre>
-            <p><strong>Step 3 — Parse table:</strong></p>
-            <pre class="code-block">"table"</pre>
-            <p><strong>Step 4 — Parse WHERE:</strong></p>
-            <pre class="code-block">{'{'}
-  left: "pop",
-  operator: ">",
-  right: 5000
-{'}'}</pre>
-            <p><strong>Step 5 — Execute:</strong></p>
-            <p>Filter rows where <code>pop > 5000</code>, then select only the <code>state</code> and <code>pop</code> columns.</p>
         </section>
     </article>
 </main>
