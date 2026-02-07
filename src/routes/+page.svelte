@@ -687,7 +687,7 @@
                         </button>
                     </div>
                     {#if copyMessage}
-                        <div style="color:#067800;font-weight:600;">
+                        <div>
                             {copyMessage}
                         </div>
                     {/if}
