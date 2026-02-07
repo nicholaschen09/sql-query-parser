@@ -11,8 +11,9 @@ import (
 )
 
 type ExecuteRequest struct {
-	Query string       `json:"query"`
-	Data  []parser.Row `json:"data"`
+	Query  string                        `json:"query"`
+	Data   []parser.Row                  `json:"data,omitempty"`
+	Tables map[string][]parser.Row       `json:"tables,omitempty"`
 }
 
 type ExecuteResponse struct {
@@ -41,13 +42,11 @@ func handleHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleExecute(w http.ResponseWriter, r *http.Request) {
-	// Set CORS headers first
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	w.Header().Set("Content-Type", "application/json")
 
-	// Handle preflight OPTIONS request
 	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
 		return
@@ -62,28 +61,29 @@ func handleExecute(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Printf("Error decoding request: %v", err)
 		errorMsg := fmt.Sprintf("Invalid request: %v", err)
-		response := ExecuteResponse{
-			Success: false,
-			Error:   &errorMsg,
-		}
-		json.NewEncoder(w).Encode(response)
+		json.NewEncoder(w).Encode(ExecuteResponse{Success: false, Error: &errorMsg})
 		return
 	}
 
 	log.Printf("Received query: %s", req.Query)
-	log.Printf("Data rows: %d", len(req.Data))
 
-	// Create parser and execute query
-	sqlParser := parser.NewSQLParser(req.Data)
+	// Build parser from tables or data
+	var sqlParser *parser.SQLParser
+	if req.Tables != nil && len(req.Tables) > 0 {
+		sqlParser = parser.NewSQLParser(req.Tables)
+	} else if req.Data != nil {
+		sqlParser = parser.NewSQLParserFromData(req.Data)
+	} else {
+		errorMsg := "No data or tables provided"
+		json.NewEncoder(w).Encode(ExecuteResponse{Success: false, Error: &errorMsg})
+		return
+	}
+
 	parsedQuery, err := sqlParser.Parse(req.Query)
 	if err != nil {
 		log.Printf("Parse error: %v", err)
 		errorMsg := err.Error()
-		response := ExecuteResponse{
-			Success: false,
-			Error:   &errorMsg,
-		}
-		json.NewEncoder(w).Encode(response)
+		json.NewEncoder(w).Encode(ExecuteResponse{Success: false, Error: &errorMsg})
 		return
 	}
 
@@ -91,22 +91,10 @@ func handleExecute(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Execute error: %v", err)
 		errorMsg := err.Error()
-		response := ExecuteResponse{
-			Success: false,
-			Error:   &errorMsg,
-		}
-		json.NewEncoder(w).Encode(response)
+		json.NewEncoder(w).Encode(ExecuteResponse{Success: false, Error: &errorMsg})
 		return
 	}
 
 	log.Printf("Query executed successfully, returned %d rows", len(results))
-
-	response := ExecuteResponse{
-		Success: true,
-		Data:    results,
-	}
-
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		log.Printf("Error encoding response: %v", err)
-	}
+	json.NewEncoder(w).Encode(ExecuteResponse{Success: true, Data: results})
 }
