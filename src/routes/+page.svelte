@@ -366,7 +366,7 @@
 <div class="page-wrapper">
 <main class="container">
     <h1>SQL Query Parser</h1>
-    <a href="/blog" class="blog-link">How it works</a>
+    <a href="/blog" class="blog-link">How it works</a> · <a href="https://github.com/nicholaschen09/sql-query-parser" class="blog-link" target="_blank">GitHub</a>
 
     <div class="json-input-section">
         <div class="input-mode-toggle">

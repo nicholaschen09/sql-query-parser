@@ -154,7 +154,7 @@
                 <li><strong>Tokenize:</strong> ["SELECT", "state", ",", "pop", "FROM", "table", "WHERE", "pop", ">", "5000"]</li>
                 <li><strong>Parse columns:</strong> ["state", "pop"]</li>
                 <li><strong>Parse table:</strong> "table"</li>
-                <li><strong>Parse WHERE:</strong> {left: "pop", operator: ">", right: 5000}</li>
+                <li><strong>Parse WHERE:</strong> {'{'}left: "pop", operator: "&gt;", right: 5000{'}'}</li>
                 <li><strong>Execute:</strong> Filter rows where pop > 5000, then select only state and pop columns</li>
             </ol>
         </section>

@@ -610,17 +610,12 @@ footer a {
 }
 
 .blog-link {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    background: white;
     color: black;
-    border: 1px solid black;
     text-decoration: none;
-    font-size: 12px;
-    margin-bottom: 2rem;
+    font-size: 14px;
     font-family: inherit;
 }
 
 .blog-link:hover {
-    background: #f5f5f5;
+    text-decoration: underline;
 }
