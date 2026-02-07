@@ -71,8 +71,8 @@ Expected response:
 
 ```json
 {
-  "success": true,
-  "data": [{ "state": "California", "pop": 10000 }]
+	"success": true,
+	"data": [{ "state": "California", "pop": 10000 }]
 }
 ```
 
@@ -91,8 +91,8 @@ Expected response:
 
 ```json
 {
-  "success": false,
-  "error": "no columns specified in SELECT"
+	"success": false,
+	"error": "no columns specified in SELECT"
 }
 ```
 

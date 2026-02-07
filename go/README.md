@@ -37,11 +37,11 @@ Execute a SQL query against provided data.
 
 ```json
 {
-  "query": "SELECT state, pop FROM table WHERE pop > 5000",
-  "data": [
-    { "state": "California", "region": "West", "pop": 10000 },
-    { "state": "Texas", "region": "South", "pop": 5000 }
-  ]
+	"query": "SELECT state, pop FROM table WHERE pop > 5000",
+	"data": [
+		{ "state": "California", "region": "West", "pop": 10000 },
+		{ "state": "Texas", "region": "South", "pop": 5000 }
+	]
 }
 ```
 
@@ -49,8 +49,8 @@ Execute a SQL query against provided data.
 
 ```json
 {
-  "success": true,
-  "data": [{ "state": "California", "pop": 10000 }]
+	"success": true,
+	"data": [{ "state": "California", "pop": 10000 }]
 }
 ```
 
@@ -62,7 +62,7 @@ Health check endpoint.
 
 ```json
 {
-  "status": "ok"
+	"status": "ok"
 }
 ```
 
