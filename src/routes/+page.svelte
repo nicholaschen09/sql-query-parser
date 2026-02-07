@@ -23,6 +23,7 @@
     let copySqlTimeout: ReturnType<typeof setTimeout> | null = null;
     let selectedHistory: QueryHistory | null = null;
     let parserType: "typescript" | "go" = "typescript";
+    let parserDropdownOpen = false;
     let goApiUrl = "http://localhost:8080";
 
     // Sample data for suggestions
@@ -517,13 +518,32 @@
         </div>
         <h2>SQL Query</h2>
         <div style="margin-bottom: 0.5rem;">
-            <label style="display: flex; align-items: center; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
                 <span>Parser:</span>
-                <select bind:value={parserType}>
-                    <option value="typescript">TypeScript (Client-side)</option>
-                    <option value="go">Go (Server-side)</option>
-                </select>
-            </label>
+                <div class="custom-dropdown">
+                    <button
+                        class="dropdown-button"
+                        on:click={() => (parserDropdownOpen = !parserDropdownOpen)}
+                    >
+                        {parserType === "typescript" ? "TypeScript (Client-side)" : "Go (Server-side)"}
+                        <span class="dropdown-arrow">{parserDropdownOpen ? "▲" : "▼"}</span>
+                    </button>
+                    {#if parserDropdownOpen}
+                        <div class="dropdown-menu">
+                            <button
+                                class="dropdown-option"
+                                class:active={parserType === "typescript"}
+                                on:click={() => { parserType = "typescript"; parserDropdownOpen = false; }}
+                            >TypeScript (Client-side)</button>
+                            <button
+                                class="dropdown-option"
+                                class:active={parserType === "go"}
+                                on:click={() => { parserType = "go"; parserDropdownOpen = false; }}
+                            >Go (Server-side)</button>
+                        </div>
+                    {/if}
+                </div>
+            </div>
             {#if parserType === "go"}
                 <div style="margin-top: 0.3rem;">
                     <label style="display: flex; align-items: center; gap: 0.5rem;">
@@ -705,7 +725,7 @@
                 <div style="margin-bottom:1.2rem;">
                     <strong>SQL Query:</strong><br
                     /><span
-                        style="font-family:'Courier New',monospace;"
+                        style="font-family:'JetBrains Mono',monospace;"
                         >{selectedHistory.query}</span
                     >
                 </div>

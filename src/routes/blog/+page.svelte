@@ -295,7 +295,7 @@ table: "table"</pre>
 
     .blog-content li code,
     .blog-content p code {
-        font-family: 'Courier New', monospace;
+        font-family: 'JetBrains Mono', monospace;
         font-size: 14px;
         background: #f0f0f0;
         padding: 0.15rem 0.4rem;
@@ -306,7 +306,7 @@ table: "table"</pre>
         background: #fafafa;
         border: 1px solid black;
         padding: 1.25rem 1.5rem;
-        font-family: 'Courier New', monospace;
+        font-family: 'JetBrains Mono', monospace;
         font-size: 15px;
         line-height: 1.7;
         overflow-x: auto;
