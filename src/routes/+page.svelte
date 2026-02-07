@@ -22,11 +22,8 @@
     let copySqlMessage = "";
     let copySqlTimeout: ReturnType<typeof setTimeout> | null = null;
     let selectedHistory: QueryHistory | null = null;
-    let parserType: "typescript" | "go" | "rust" | "haskell" = "typescript";
-    let parserDropdownOpen = false;
+    let parserType: "typescript" | "go" = "typescript";
     let goApiUrl = "http://localhost:8080";
-    let rustApiUrl = "http://localhost:8081";
-    let haskellApiUrl = "http://localhost:8082";
 
     // Sample data for suggestions
     const sampleJsons = [
@@ -184,10 +181,9 @@
         const start = performance.now();
         
         try {
-            if (parserType === "go" || parserType === "rust" || parserType === "haskell") {
-                // Use server-side parser via API
-                const apiUrl = parserType === "go" ? goApiUrl : parserType === "rust" ? rustApiUrl : haskellApiUrl;
-                const response = await fetch(`${apiUrl}/execute`, {
+            if (parserType === "go") {
+                // Use Go parser via API
+                const response = await fetch(`${goApiUrl}/execute`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -227,9 +223,7 @@
             
             // Provide helpful error messages for common issues
             if (errorMessage.includes("Failed to fetch") || errorMessage.includes("NetworkError")) {
-                const serverUrl = parserType === "go" ? goApiUrl : parserType === "rust" ? rustApiUrl : haskellApiUrl;
-                const lang = parserType.charAt(0).toUpperCase() + parserType.slice(1);
-                errorMessage = `Cannot connect to ${lang} server at ${serverUrl}. Make sure the server is running.`;
+                errorMessage = `Cannot connect to Go server at ${goApiUrl}. Make sure the Go server is running (cd go && go run cmd/server/main.go)`;
             } else if (errorMessage.includes("HTTP")) {
                 errorMessage = `Go server error: ${errorMessage}`;
             }
@@ -251,16 +245,6 @@
         history = [newHistory, ...history];
         saveHistory();
         loading = false;
-    }
-
-    function clearJsonInput() {
-        jsonInput = "";
-        tables = {};
-        currentTable = null;
-        previewData = "";
-        jsonError = null;
-        result = null;
-        queryTime = null;
     }
 
     function clearQuery() {
@@ -407,7 +391,6 @@
             <span>Try sample JSON:</span>
             {#each sampleJsons as sample}
                 <button
-                    class="clear-btn"
                     type="button"
                     on:click={() => {
                         jsonInput = sample.value;
@@ -421,16 +404,11 @@
         </div>
 
         {#if inputMode === "file"}
-            {#if currentTable}
-                <div style="display:flex;justify-content:flex-end;margin-bottom:0.5rem;">
-                    <button class="clear-btn" on:click={clearJsonInput}>Clear Input</button>
-                </div>
-            {/if}
             <div
                 class="upload-zone"
+                class:dragging={isDragging}
                 role="button"
                 tabindex="0"
-                class:dragging={isDragging}
                 on:dragover={handleDragOver}
                 on:dragleave={handleDragLeave}
                 on:drop={handleDrop}
@@ -462,12 +440,7 @@
             </div>
         {:else}
             <div class="raw-json-section">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
-                    <h2 style="margin:0;">JSON Input</h2>
-                    {#if jsonInput}
-                        <button class="clear-btn" on:click={clearJsonInput}>Clear Input</button>
-                    {/if}
-                </div>
+                <h2>JSON Input</h2>
                 <textarea
                     bind:value={jsonInput}
                     placeholder="Paste your JSON data here..."
@@ -498,6 +471,7 @@
                     </p>
                     <button
                         class="clear-btn"
+                        style="margin-left:1rem;"
                         on:click={() => copyToClipboard(previewData)}
                     >
                         Copy to Clipboard
@@ -517,70 +491,30 @@
         <div class="sample-suggestions">
             <span>Try sample SQL:</span>
             {#each sampleSqls as sample}
-                <button class="clear-btn" type="button" on:click={() => (query = sample.value)}>
+                <button type="button" on:click={() => (query = sample.value)}>
                     {sample.label}
                 </button>
             {/each}
         </div>
         <h2>SQL Query</h2>
         <div style="margin-bottom: 0.5rem;">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
                 <span>Parser:</span>
-                <div class="custom-dropdown">
-                    <button
-                        class="dropdown-button"
-                        on:click={() => (parserDropdownOpen = !parserDropdownOpen)}
-                    >
-                        {parserType === "typescript" ? "TypeScript (Client-side)" : parserType === "go" ? "Go (Server-side)" : parserType === "rust" ? "Rust (Server-side)" : "Haskell (Server-side)"}
-                        <span class="dropdown-arrow">{parserDropdownOpen ? "▲" : "▼"}</span>
-                    </button>
-                    {#if parserDropdownOpen}
-                        <div class="dropdown-menu">
-                            <button
-                                class="dropdown-option"
-                                class:active={parserType === "typescript"}
-                                on:click={() => { parserType = "typescript"; parserDropdownOpen = false; }}
-                            >TypeScript (Client-side)</button>
-                            <button
-                                class="dropdown-option"
-                                class:active={parserType === "go"}
-                                on:click={() => { parserType = "go"; parserDropdownOpen = false; }}
-                            >Go (Server-side)</button>
-                            <button
-                                class="dropdown-option"
-                                class:active={parserType === "rust"}
-                                on:click={() => { parserType = "rust"; parserDropdownOpen = false; }}
-                            >Rust (Server-side)</button>
-                            <button
-                                class="dropdown-option"
-                                class:active={parserType === "haskell"}
-                                on:click={() => { parserType = "haskell"; parserDropdownOpen = false; }}
-                            >Haskell (Server-side)</button>
-                        </div>
-                    {/if}
-                </div>
-            </div>
+                <select bind:value={parserType}>
+                    <option value="typescript">TypeScript (Client-side)</option>
+                    <option value="go">Go (Server-side)</option>
+                </select>
+            </label>
             {#if parserType === "go"}
                 <div style="margin-top: 0.3rem;">
                     <label style="display: flex; align-items: center; gap: 0.5rem;">
                         <span>Go API URL:</span>
-                        <input type="text" bind:value={goApiUrl} placeholder="http://localhost:8080" style="flex: 1; max-width: 300px;" />
-                    </label>
-                </div>
-            {/if}
-            {#if parserType === "rust"}
-                <div style="margin-top: 0.3rem;">
-                    <label style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span>Rust API URL:</span>
-                        <input type="text" bind:value={rustApiUrl} placeholder="http://localhost:8081" style="flex: 1; max-width: 300px;" />
-                    </label>
-                </div>
-            {/if}
-            {#if parserType === "haskell"}
-                <div style="margin-top: 0.3rem;">
-                    <label style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span>Haskell API URL:</span>
-                        <input type="text" bind:value={haskellApiUrl} placeholder="http://localhost:8082" style="flex: 1; max-width: 300px;" />
+                        <input
+                            type="text"
+                            bind:value={goApiUrl}
+                            placeholder="http://localhost:8080"
+                            style="flex: 1; max-width: 300px;"
+                        />
                     </label>
                 </div>
             {/if}
@@ -591,7 +525,7 @@
             rows="4"
             style="width:100%;"
         ></textarea>
-                <div
+        <div
             style="display:flex;align-items:center;justify-content:space-between;margin-top:0.3rem;gap:1rem;"
         >
             <div class="query-actions" style="margin:0;">
@@ -617,8 +551,8 @@
                     >Clear History</button
                 >
             </div>
-            <button class="icon-btn" title="Copy to clipboard" on:click={copySqlToClipboard}>
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <button class="clear-btn" on:click={copySqlToClipboard}>
+                Copy to Clipboard
             </button>
         </div>
         {#if copySqlMessage}
@@ -644,6 +578,17 @@
                             >Export Excel</button
                         >
                     </div>
+                    <button
+                        class="clear-btn"
+                        style="float:right;margin-top:-8px;margin-bottom:8px"
+                        on:click={() =>
+                            result &&
+                            copyToClipboard(
+                                JSON.stringify(result.data, null, 2),
+                            )}
+                    >
+                        Copy to Clipboard
+                    </button>
                     <div class="result-meta">
                         <span
                             >{result.data.length} row{result.data.length === 1
@@ -674,21 +619,8 @@
                             </tbody>
                         </table>
                     </div>
-                    <div style="display:flex;justify-content:flex-end;margin-top:0.5rem;">
-                        <button
-                            class="icon-btn"
-                            title="Copy to clipboard"
-                            on:click={() =>
-                                result &&
-                                copyToClipboard(
-                                    JSON.stringify(result.data, null, 2),
-                                )}
-                        >
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                        </button>
-                    </div>
                     {#if copyMessage}
-                        <div>
+                        <div style="color:#067800;font-weight:600;">
                             {copyMessage}
                         </div>
                     {/if}
@@ -709,14 +641,6 @@
             {#each history as item}
                 <div
                     class="history-item"
-                    role="button"
-                    tabindex="0"
-                    on:keydown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            selectedHistory = item;
-                        }
-                    }}
                     style="cursor:pointer;"
                     on:click={() => (selectedHistory = item)}
                 >
@@ -737,11 +661,11 @@
     {/if}
 
     {#if selectedHistory}
-                <div
+        <div
             class="modal-backdrop"
             style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;"
         >
-                <div
+            <div
                 class="modal-content"
                 style="background:white;padding:1.2rem 2.5rem 2rem 2.5rem;border:1px solid black;max-width:600px;width:90vw;position:relative;overflow:auto;"
             >
@@ -754,7 +678,7 @@
                 <div style="margin-bottom:1.2rem;">
                     <strong>SQL Query:</strong><br
                     /><span
-                        style="font-family:'JetBrains Mono',monospace;"
+                        style="font-family:'Courier New',monospace;"
                         >{selectedHistory.query}</span
                     >
                 </div>

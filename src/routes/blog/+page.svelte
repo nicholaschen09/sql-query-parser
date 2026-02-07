@@ -247,6 +247,19 @@ table: "table"</pre>
         </section>
     </article>
 </main>
+<footer>
+    Made by <a
+        href="https://x.com/nicholaschen__"
+        target="_blank"
+        style="color:black;text-decoration:underline;">Nicholas Chen</a
+    >
+    &middot;
+    <a
+        href="https://github.com/nicholaschen09"
+        target="_blank"
+        style="color:black;text-decoration:underline;">GitHub</a
+    >
+</footer>
 </div>
 
 <style>
