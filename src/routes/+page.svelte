@@ -366,6 +366,7 @@
 <div class="page-wrapper">
 <main class="container">
     <h1>SQL Query Parser</h1>
+    <a href="/blog" class="blog-link">How it works</a>
 
     <div class="json-input-section">
         <div class="input-mode-toggle">
@@ -750,7 +751,7 @@
     >
     &middot;
     <a
-        href="https://github.com/your-repo"
+        href="https://github.com/nicholaschen09"
         target="_blank"
         style="color:black;text-decoration:underline;">GitHub</a
     >

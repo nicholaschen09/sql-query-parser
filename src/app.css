@@ -463,7 +463,6 @@ tr:nth-child(even) td {
     margin-bottom: 0.25rem;
 }
 
-select,
 input[type="text"] {
     padding: 0.25rem 0.5rem;
     border: 1px solid black;
@@ -474,10 +473,82 @@ input[type="text"] {
     font-family: inherit;
 }
 
-select:focus,
 input[type="text"]:focus {
     outline: 1px solid black;
     outline-offset: -1px;
+}
+
+.custom-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-button {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid black;
+    border-radius: 0;
+    background: white;
+    color: black;
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-width: 200px;
+}
+
+.dropdown-button:hover {
+    background: #f5f5f5;
+}
+
+.dropdown-button:focus {
+    outline: 1px solid black;
+    outline-offset: -1px;
+}
+
+.dropdown-arrow {
+    font-size: 10px;
+    color: black;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid black;
+    border-top: none;
+    z-index: 1000;
+    margin-top: 0;
+}
+
+.dropdown-option {
+    width: 100%;
+    padding: 0.5rem;
+    border: none;
+    border-bottom: 1px solid black;
+    background: white;
+    color: black;
+    font-size: 12px;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.dropdown-option:last-child {
+    border-bottom: none;
+}
+
+.dropdown-option:hover {
+    background: #f5f5f5;
+}
+
+.dropdown-option.active {
+    background: black;
+    color: white;
 }
 
 label {
@@ -536,4 +607,20 @@ footer {
 footer a {
     color: black;
     text-decoration: underline;
+}
+
+.blog-link {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: white;
+    color: black;
+    border: 1px solid black;
+    text-decoration: none;
+    font-size: 12px;
+    margin-bottom: 2rem;
+    font-family: inherit;
+}
+
+.blog-link:hover {
+    background: #f5f5f5;
 }
