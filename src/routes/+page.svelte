@@ -22,9 +22,11 @@
     let copySqlMessage = "";
     let copySqlTimeout: ReturnType<typeof setTimeout> | null = null;
     let selectedHistory: QueryHistory | null = null;
-    let parserType: "typescript" | "go" = "typescript";
+    let parserType: "typescript" | "go" | "rust" | "haskell" = "typescript";
     let parserDropdownOpen = false;
     let goApiUrl = "http://localhost:8080";
+    let rustApiUrl = "http://localhost:8081";
+    let haskellApiUrl = "http://localhost:8082";
 
     // Sample data for suggestions
     const sampleJsons = [
@@ -182,9 +184,10 @@
         const start = performance.now();
         
         try {
-            if (parserType === "go") {
-                // Use Go parser via API
-                const response = await fetch(`${goApiUrl}/execute`, {
+            if (parserType === "go" || parserType === "rust" || parserType === "haskell") {
+                // Use server-side parser via API
+                const apiUrl = parserType === "go" ? goApiUrl : parserType === "rust" ? rustApiUrl : haskellApiUrl;
+                const response = await fetch(`${apiUrl}/execute`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -224,7 +227,9 @@
             
             // Provide helpful error messages for common issues
             if (errorMessage.includes("Failed to fetch") || errorMessage.includes("NetworkError")) {
-                errorMessage = `Cannot connect to Go server at ${goApiUrl}. Make sure the Go server is running (cd go && go run cmd/server/main.go)`;
+                const serverUrl = parserType === "go" ? goApiUrl : parserType === "rust" ? rustApiUrl : haskellApiUrl;
+                const lang = parserType.charAt(0).toUpperCase() + parserType.slice(1);
+                errorMessage = `Cannot connect to ${lang} server at ${serverUrl}. Make sure the server is running.`;
             } else if (errorMessage.includes("HTTP")) {
                 errorMessage = `Go server error: ${errorMessage}`;
             }
@@ -525,7 +530,7 @@
                         class="dropdown-button"
                         on:click={() => (parserDropdownOpen = !parserDropdownOpen)}
                     >
-                        {parserType === "typescript" ? "TypeScript (Client-side)" : "Go (Server-side)"}
+                        {parserType === "typescript" ? "TypeScript (Client-side)" : parserType === "go" ? "Go (Server-side)" : parserType === "rust" ? "Rust (Server-side)" : "Haskell (Server-side)"}
                         <span class="dropdown-arrow">{parserDropdownOpen ? "▲" : "▼"}</span>
                     </button>
                     {#if parserDropdownOpen}
@@ -540,6 +545,16 @@
                                 class:active={parserType === "go"}
                                 on:click={() => { parserType = "go"; parserDropdownOpen = false; }}
                             >Go (Server-side)</button>
+                            <button
+                                class="dropdown-option"
+                                class:active={parserType === "rust"}
+                                on:click={() => { parserType = "rust"; parserDropdownOpen = false; }}
+                            >Rust (Server-side)</button>
+                            <button
+                                class="dropdown-option"
+                                class:active={parserType === "haskell"}
+                                on:click={() => { parserType = "haskell"; parserDropdownOpen = false; }}
+                            >Haskell (Server-side)</button>
                         </div>
                     {/if}
                 </div>
@@ -548,12 +563,23 @@
                 <div style="margin-top: 0.3rem;">
                     <label style="display: flex; align-items: center; gap: 0.5rem;">
                         <span>Go API URL:</span>
-                        <input
-                            type="text"
-                            bind:value={goApiUrl}
-                            placeholder="http://localhost:8080"
-                            style="flex: 1; max-width: 300px;"
-                        />
+                        <input type="text" bind:value={goApiUrl} placeholder="http://localhost:8080" style="flex: 1; max-width: 300px;" />
+                    </label>
+                </div>
+            {/if}
+            {#if parserType === "rust"}
+                <div style="margin-top: 0.3rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span>Rust API URL:</span>
+                        <input type="text" bind:value={rustApiUrl} placeholder="http://localhost:8081" style="flex: 1; max-width: 300px;" />
+                    </label>
+                </div>
+            {/if}
+            {#if parserType === "haskell"}
+                <div style="margin-top: 0.3rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span>Haskell API URL:</span>
+                        <input type="text" bind:value={haskellApiUrl} placeholder="http://localhost:8082" style="flex: 1; max-width: 300px;" />
                     </label>
                 </div>
             {/if}
@@ -590,8 +616,8 @@
                     >Clear History</button
                 >
             </div>
-            <button class="clear-btn" on:click={copySqlToClipboard}>
-                Copy to Clipboard
+            <button class="icon-btn" title="Copy to clipboard" on:click={copySqlToClipboard}>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             </button>
         </div>
         {#if copySqlMessage}
@@ -617,17 +643,6 @@
                             >Export Excel</button
                         >
                     </div>
-                    <button
-                        class="clear-btn"
-                        style="float:right;margin-top:-8px;margin-bottom:8px"
-                        on:click={() =>
-                            result &&
-                            copyToClipboard(
-                                JSON.stringify(result.data, null, 2),
-                            )}
-                    >
-                        Copy to Clipboard
-                    </button>
                     <div class="result-meta">
                         <span
                             >{result.data.length} row{result.data.length === 1
@@ -657,6 +672,19 @@
                                 {/each}
                             </tbody>
                         </table>
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;margin-top:0.5rem;">
+                        <button
+                            class="icon-btn"
+                            title="Copy to clipboard"
+                            on:click={() =>
+                                result &&
+                                copyToClipboard(
+                                    JSON.stringify(result.data, null, 2),
+                                )}
+                        >
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        </button>
                     </div>
                     {#if copyMessage}
                         <div style="color:#067800;font-weight:600;">

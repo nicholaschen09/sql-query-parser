@@ -199,6 +199,26 @@ table: "table"</pre>
                 <li>Runs server-side for better performance on large datasets</li>
                 <li>Returns JSON responses to the frontend</li>
             </ul>
+
+            <h3>Rust Parser</h3>
+            <p>
+                The Rust implementation provides maximum performance with memory safety. It:
+            </p>
+            <ul>
+                <li>Uses Actix-web for the HTTP server</li>
+                <li>Leverages Rust's ownership system for zero-cost abstractions</li>
+                <li>Serde for JSON serialization/deserialization</li>
+            </ul>
+
+            <h3>Haskell Parser</h3>
+            <p>
+                The Haskell implementation takes a functional programming approach. It:
+            </p>
+            <ul>
+                <li>Uses Scotty for the HTTP server</li>
+                <li>Represents the AST with algebraic data types</li>
+                <li>Pattern matching for clean condition evaluation</li>
+            </ul>
         </section>
 
         <section>

@@ -26,3 +26,19 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 queries.db
+
+# Go
+go/bin/
+go/tmp/
+
+# Rust
+rust/target/
+rust/Cargo.lock
+
+# Haskell
+haskell/dist-newstyle/
+haskell/.cabal/
+haskell/*.hi
+haskell/*.o
+haskell/*.dyn_hi
+haskell/*.dyn_o
