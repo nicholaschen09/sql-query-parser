@@ -191,8 +191,8 @@
 
 		try {
 			if (parserType === 'typescript') {
-				// Use TypeScript parser
-				const parser = new SQLParser(tables[currentTable]);
+				// Use TypeScript parser (pass all tables for JOIN support)
+				const parser = new SQLParser(tables);
 				const parsed = parser.parse(query);
 				const res = parser.execute(parsed);
 				result = { success: true, data: res };
@@ -209,7 +209,7 @@
 					},
 					body: JSON.stringify({
 						query: query,
-						data: tables[currentTable]
+						tables: tables
 					})
 				});
 

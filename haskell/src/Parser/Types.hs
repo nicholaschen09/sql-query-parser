@@ -7,6 +7,9 @@ module Parser.Types
   , Operator(..)
   , Condition(..)
   , ConditionOperand(..)
+  , ColumnExpr(..)
+  , JoinClause(..)
+  , OrderByClause(..)
   , SelectQuery(..)
   , QueryResult(..)
   , toNumber
@@ -17,7 +20,6 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.HashMap.Strict (HashMap)
 import GHC.Generics
-import Data.Scientific (toRealFloat, isInteger, toBoundedInteger)
 
 -- | A single value in a row
 data Value
@@ -25,6 +27,8 @@ data Value
   | VString Text
   | VBool Bool
   | VNull
+  | VObject (HashMap Text Value)
+  | VArray [Value]
   deriving (Show, Eq, Generic)
 
 instance ToJSON Value where
@@ -36,12 +40,16 @@ instance ToJSON Value where
   toJSON (VString s) = toJSON s
   toJSON (VBool b)   = toJSON b
   toJSON VNull       = Null
+  toJSON (VObject m) = toJSON m
+  toJSON (VArray a)  = toJSON a
 
 instance FromJSON Value where
-  parseJSON (Number n) = pure $ VNumber (toRealFloat n)
+  parseJSON (Number n) = pure $ VNumber (realToFrac n)
   parseJSON (String s) = pure $ VString s
   parseJSON (Bool b)   = pure $ VBool b
   parseJSON Null       = pure VNull
+  parseJSON (Object o) = VObject <$> mapM parseJSON o
+  parseJSON (Array a)  = VArray <$> mapM parseJSON (foldr (:) [] a)
   parseJSON _          = fail "unsupported value type"
 
 -- | A row of data: column name -> value
@@ -53,8 +61,16 @@ data Operator
   | OpNotEqual
   | OpLess
   | OpGreater
+  | OpLessEq
+  | OpGreaterEq
   | OpAnd
   | OpOr
+  | OpLike
+  | OpNotLike
+  | OpIn
+  | OpNotIn
+  | OpIs
+  | OpIsNot
   deriving (Show, Eq)
 
 instance ToJSON Operator where
@@ -62,27 +78,32 @@ instance ToJSON Operator where
   toJSON OpNotEqual = String "!="
   toJSON OpLess     = String "<"
   toJSON OpGreater  = String ">"
+  toJSON OpLessEq   = String "<="
+  toJSON OpGreaterEq = String ">="
   toJSON OpAnd      = String "AND"
   toJSON OpOr       = String "OR"
-
-instance FromJSON Operator where
-  parseJSON (String "=")   = pure OpEqual
-  parseJSON (String "!=")  = pure OpNotEqual
-  parseJSON (String "<")   = pure OpLess
-  parseJSON (String ">")   = pure OpGreater
-  parseJSON (String "AND") = pure OpAnd
-  parseJSON (String "OR")  = pure OpOr
-  parseJSON _              = fail "invalid operator"
+  toJSON OpLike     = String "LIKE"
+  toJSON OpNotLike  = String "NOT LIKE"
+  toJSON OpIn       = String "IN"
+  toJSON OpNotIn    = String "NOT IN"
+  toJSON OpIs       = String "IS"
+  toJSON OpIsNot    = String "IS NOT"
 
 -- | An operand in a condition
 data ConditionOperand
   = COLiteral Text
   | COCondition Condition
+  | COValueList [Value]
+  | COSubQuery SelectQuery
+  | CONull
   deriving (Show, Eq)
 
 instance ToJSON ConditionOperand where
   toJSON (COLiteral t)    = toJSON t
   toJSON (COCondition c)  = toJSON c
+  toJSON (COValueList vs) = toJSON vs
+  toJSON (COSubQuery _)   = String "<subquery>"
+  toJSON CONull           = Null
 
 -- | A WHERE condition node
 data Condition = Condition
@@ -98,19 +119,44 @@ instance ToJSON Condition where
     , "right"    .= r
     ]
 
+-- | A column expression
+data ColumnExpr = ColumnExpr
+  { ceIsAggregate :: Bool
+  , ceName        :: Text
+  , ceFunc        :: Text
+  , ceAlias       :: Text
+  } deriving (Show, Eq)
+
+-- | A JOIN clause
+data JoinClause = JoinClause
+  { jcJoinType :: Text
+  , jcTable    :: Text
+  , jcOn       :: Condition
+  } deriving (Show, Eq)
+
+-- | ORDER BY clause
+data OrderByClause = OrderByClause
+  { obColumn    :: Text
+  , obDirection :: Text
+  } deriving (Show, Eq)
+
 -- | A parsed SELECT query (the AST)
 data SelectQuery = SelectQuery
-  { sqType    :: Text
-  , sqColumns :: [Text]
-  , sqTable   :: Text
-  , sqWhere   :: Maybe Condition
-  , sqLimit   :: Maybe Int
+  { sqType       :: Text
+  , sqColumnExprs :: [ColumnExpr]
+  , sqTable      :: Text
+  , sqJoins      :: [JoinClause]
+  , sqWhere      :: Maybe Condition
+  , sqGroupBy    :: [Text]
+  , sqHaving     :: Maybe Condition
+  , sqOrderBy    :: [OrderByClause]
+  , sqLimit      :: Maybe Int
   } deriving (Show, Eq)
 
 instance ToJSON SelectQuery where
   toJSON sq = object $
     [ "type"    .= sqType sq
-    , "columns" .= sqColumns sq
+    , "columns" .= map ceName (sqColumnExprs sq)
     , "table"   .= sqTable sq
     ] ++ maybe [] (\w -> ["where" .= w]) (sqWhere sq)
       ++ maybe [] (\l -> ["limit" .= l]) (sqLimit sq)
