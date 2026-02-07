@@ -551,12 +551,12 @@ input[type="text"]:focus {
 }
 
 .dropdown-option:hover {
-    background: #f5f5f5;
+    background: #f0f0f0;
 }
 
 .dropdown-option.active {
-    background: black;
-    color: white;
+    background: #e8e8e8;
+    color: black;
 }
 
 label {
