@@ -6,11 +6,11 @@
 	<main class="container">
 		<button class="back-button" on:click={() => goto('/')}>← Back</button>
 
-		<h1>How the SQL Parser Works</h1>
+		<h1>How the SQL Query Parser Works</h1>
 
 		<article class="blog-content">
 			<p class="intro">
-				This SQL parser is implemented in <strong>four languages</strong> — TypeScript, Go, Rust, and
+				This SQL query parser is implemented in <strong>four languages</strong> — TypeScript, Go, Rust, and
 				Haskell — each using the same algorithm to transform SQL queries into executable operations on
 				JSON data. The TypeScript version runs client-side in the browser, while Go, Rust, and Haskell
 				each provide a server-side HTTP API. Here's how they all work under the hood, using the Go implementation
