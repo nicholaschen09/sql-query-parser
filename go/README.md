@@ -6,6 +6,7 @@ A Go implementation of the SQL query parser, providing a REST API endpoint for p
 
 1. Make sure you have Go 1.21+ installed
 2. Install dependencies:
+
 ```bash
 cd go
 go mod tidy
@@ -18,6 +19,7 @@ go run cmd/server/main.go
 ```
 
 Or build and run:
+
 ```bash
 go build -o bin/server cmd/server/main.go
 ./bin/server
@@ -32,6 +34,7 @@ The server will start on port 8080 (or the port specified in the `PORT` environm
 Execute a SQL query against provided data.
 
 **Request Body:**
+
 ```json
 {
   "query": "SELECT state, pop FROM table WHERE pop > 5000",
@@ -43,12 +46,11 @@ Execute a SQL query against provided data.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
-  "data": [
-    { "state": "California", "pop": 10000 }
-  ]
+  "data": [{ "state": "California", "pop": 10000 }]
 }
 ```
 
@@ -57,6 +59,7 @@ Execute a SQL query against provided data.
 Health check endpoint.
 
 **Response:**
+
 ```json
 {
   "status": "ok"
@@ -68,6 +71,7 @@ Health check endpoint.
 ### Unit Tests
 
 Run parser unit tests:
+
 ```bash
 make test
 # or
@@ -75,6 +79,7 @@ go test ./...
 ```
 
 Run with verbose output:
+
 ```bash
 make test-verbose
 # or
@@ -82,6 +87,7 @@ go test -v ./...
 ```
 
 Run with coverage:
+
 ```bash
 make test-coverage
 # or
@@ -91,6 +97,7 @@ go test -cover ./...
 ### API Testing
 
 1. **Start the server** (in one terminal):
+
 ```bash
 make run
 # or
@@ -98,6 +105,7 @@ go run cmd/server/main.go
 ```
 
 2. **Test the API** (in another terminal):
+
 ```bash
 # Using the test script (requires jq)
 make test-api

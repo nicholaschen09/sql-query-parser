@@ -12,16 +12,19 @@ go test ./...
 ```
 
 Run with verbose output:
+
 ```bash
 go test -v ./...
 ```
 
 Run a specific test:
+
 ```bash
 go test -v -run TestSQLParser
 ```
 
 Run with coverage:
+
 ```bash
 go test -cover ./...
 ```
@@ -44,8 +47,9 @@ curl http://localhost:8080/health
 ```
 
 Expected response:
+
 ```json
-{"status":"ok"}
+{ "status": "ok" }
 ```
 
 ### Test Execute Endpoint
@@ -64,12 +68,11 @@ curl -X POST http://localhost:8080/execute \
 ```
 
 Expected response:
+
 ```json
 {
   "success": true,
-  "data": [
-    {"state": "California", "pop": 10000}
-  ]
+  "data": [{ "state": "California", "pop": 10000 }]
 }
 ```
 
@@ -85,6 +88,7 @@ curl -X POST http://localhost:8080/execute \
 ```
 
 Expected response:
+
 ```json
 {
   "success": false,
@@ -95,12 +99,14 @@ Expected response:
 ## 3. Integration Testing with Frontend
 
 1. **Start the Go server** (Terminal 1):
+
 ```bash
 cd go
 go run cmd/server/main.go
 ```
 
 2. **Start the frontend** (Terminal 2):
+
 ```bash
 npm run dev
 ```
@@ -116,6 +122,7 @@ npm run dev
    - Verify the API URL is `http://localhost:8080`
 
 6. **Test queries**:
+
    ```sql
    SELECT * FROM table
    SELECT state, pop FROM table WHERE pop > 5000

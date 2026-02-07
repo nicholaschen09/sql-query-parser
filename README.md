@@ -34,12 +34,14 @@ sql-query-parser/
 ## Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/nicholaschen09/sql-query-parser.git
 cd sql-query-parser
 ```
 
 2. Install frontend dependencies:
+
 ```bash
 npm install
 ```

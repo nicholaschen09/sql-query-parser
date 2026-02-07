@@ -1,191 +1,191 @@
 [
-    {
-        "state": "California",
-        "region": "West",
-        "pop": 39538223,
-        "pop_male": 19453769,
-        "pop_female": 20084454
-    },
-    {
-        "state": "Texas",
-        "region": "South",
-        "pop": 29145505,
-        "pop_male": 14358470,
-        "pop_female": 14787035
-    },
-    {
-        "state": "Florida",
-        "region": "South",
-        "pop": 21538187,
-        "pop_male": 10470577,
-        "pop_female": 11067610
-    },
-    {
-        "state": "New York",
-        "region": "Northeast",
-        "pop": 20201249,
-        "pop_male": 9764705,
-        "pop_female": 10436544
-    },
-    {
-        "state": "Pennsylvania",
-        "region": "Northeast",
-        "pop": 13002700,
-        "pop_male": 6348860,
-        "pop_female": 6653840
-    },
-    {
-        "state": "Illinois",
-        "region": "Midwest",
-        "pop": 12812508,
-        "pop_male": 6260224,
-        "pop_female": 6552284
-    },
-    {
-        "state": "Ohio",
-        "region": "Midwest",
-        "pop": 11799448,
-        "pop_male": 5773955,
-        "pop_female": 6025493
-    },
-    {
-        "state": "Georgia",
-        "region": "South",
-        "pop": 10711908,
-        "pop_male": 5213777,
-        "pop_female": 5498131
-    },
-    {
-        "state": "North Carolina",
-        "region": "South",
-        "pop": 10439388,
-        "pop_male": 5060741,
-        "pop_female": 5378647
-    },
-    {
-        "state": "Michigan",
-        "region": "Midwest",
-        "pop": 10077331,
-        "pop_male": 4941608,
-        "pop_female": 5135723
-    },
-    {
-        "state": "New Jersey",
-        "region": "Northeast",
-        "pop": 9288994,
-        "pop_male": 4521344,
-        "pop_female": 4767650
-    },
-    {
-        "state": "Virginia",
-        "region": "South",
-        "pop": 8631393,
-        "pop_male": 4235747,
-        "pop_female": 4395646
-    },
-    {
-        "state": "Washington",
-        "region": "West",
-        "pop": 7693612,
-        "pop_male": 3830197,
-        "pop_female": 3863415
-    },
-    {
-        "state": "Arizona",
-        "region": "West",
-        "pop": 7151502,
-        "pop_male": 3529506,
-        "pop_female": 3621996
-    },
-    {
-        "state": "Tennessee",
-        "region": "South",
-        "pop": 6910840,
-        "pop_male": 3360268,
-        "pop_female": 3550572
-    },
-    {
-        "state": "Utah",
-        "region": "West",
-        "pop": 3271616,
-        "pop_male": 1649498,
-        "pop_female": 1622118
-    },
-    {
-        "state": "Nevada",
-        "region": "West",
-        "pop": 3104614,
-        "pop_male": 1560878,
-        "pop_female": 1543736
-    },
-    {
-        "state": "Kansas",
-        "region": "Midwest",
-        "pop": 2937880,
-        "pop_male": 1461114,
-        "pop_female": 1476766
-    },
-    {
-        "state": "New Mexico",
-        "region": "West",
-        "pop": 2117522,
-        "pop_male": 1047689,
-        "pop_female": 1069833
-    },
-    {
-        "state": "Montana",
-        "region": "West",
-        "pop": 1084225,
-        "pop_male": 547922,
-        "pop_female": 536303
-    },
-    {
-        "state": "Rhode Island",
-        "region": "Northeast",
-        "pop": 1097379,
-        "pop_male": 533444,
-        "pop_female": 563935
-    },
-    {
-        "state": "Delaware",
-        "region": "South",
-        "pop": 989948,
-        "pop_male": 479264,
-        "pop_female": 510684
-    },
-    {
-        "state": "South Dakota",
-        "region": "Midwest",
-        "pop": 886667,
-        "pop_male": 447848,
-        "pop_female": 438819
-    },
-    {
-        "state": "North Dakota",
-        "region": "Midwest",
-        "pop": 779094,
-        "pop_male": 398625,
-        "pop_female": 380469
-    },
-    {
-        "state": "Alaska",
-        "region": "West",
-        "pop": 733391,
-        "pop_male": 384065,
-        "pop_female": 349326
-    },
-    {
-        "state": "Vermont",
-        "region": "Northeast",
-        "pop": 643077,
-        "pop_male": 317663,
-        "pop_female": 325414
-    },
-    {
-        "state": "Wyoming",
-        "region": "West",
-        "pop": 576851,
-        "pop_male": 293957,
-        "pop_female": 282894
-    }
+  {
+    "state": "California",
+    "region": "West",
+    "pop": 39538223,
+    "pop_male": 19453769,
+    "pop_female": 20084454
+  },
+  {
+    "state": "Texas",
+    "region": "South",
+    "pop": 29145505,
+    "pop_male": 14358470,
+    "pop_female": 14787035
+  },
+  {
+    "state": "Florida",
+    "region": "South",
+    "pop": 21538187,
+    "pop_male": 10470577,
+    "pop_female": 11067610
+  },
+  {
+    "state": "New York",
+    "region": "Northeast",
+    "pop": 20201249,
+    "pop_male": 9764705,
+    "pop_female": 10436544
+  },
+  {
+    "state": "Pennsylvania",
+    "region": "Northeast",
+    "pop": 13002700,
+    "pop_male": 6348860,
+    "pop_female": 6653840
+  },
+  {
+    "state": "Illinois",
+    "region": "Midwest",
+    "pop": 12812508,
+    "pop_male": 6260224,
+    "pop_female": 6552284
+  },
+  {
+    "state": "Ohio",
+    "region": "Midwest",
+    "pop": 11799448,
+    "pop_male": 5773955,
+    "pop_female": 6025493
+  },
+  {
+    "state": "Georgia",
+    "region": "South",
+    "pop": 10711908,
+    "pop_male": 5213777,
+    "pop_female": 5498131
+  },
+  {
+    "state": "North Carolina",
+    "region": "South",
+    "pop": 10439388,
+    "pop_male": 5060741,
+    "pop_female": 5378647
+  },
+  {
+    "state": "Michigan",
+    "region": "Midwest",
+    "pop": 10077331,
+    "pop_male": 4941608,
+    "pop_female": 5135723
+  },
+  {
+    "state": "New Jersey",
+    "region": "Northeast",
+    "pop": 9288994,
+    "pop_male": 4521344,
+    "pop_female": 4767650
+  },
+  {
+    "state": "Virginia",
+    "region": "South",
+    "pop": 8631393,
+    "pop_male": 4235747,
+    "pop_female": 4395646
+  },
+  {
+    "state": "Washington",
+    "region": "West",
+    "pop": 7693612,
+    "pop_male": 3830197,
+    "pop_female": 3863415
+  },
+  {
+    "state": "Arizona",
+    "region": "West",
+    "pop": 7151502,
+    "pop_male": 3529506,
+    "pop_female": 3621996
+  },
+  {
+    "state": "Tennessee",
+    "region": "South",
+    "pop": 6910840,
+    "pop_male": 3360268,
+    "pop_female": 3550572
+  },
+  {
+    "state": "Utah",
+    "region": "West",
+    "pop": 3271616,
+    "pop_male": 1649498,
+    "pop_female": 1622118
+  },
+  {
+    "state": "Nevada",
+    "region": "West",
+    "pop": 3104614,
+    "pop_male": 1560878,
+    "pop_female": 1543736
+  },
+  {
+    "state": "Kansas",
+    "region": "Midwest",
+    "pop": 2937880,
+    "pop_male": 1461114,
+    "pop_female": 1476766
+  },
+  {
+    "state": "New Mexico",
+    "region": "West",
+    "pop": 2117522,
+    "pop_male": 1047689,
+    "pop_female": 1069833
+  },
+  {
+    "state": "Montana",
+    "region": "West",
+    "pop": 1084225,
+    "pop_male": 547922,
+    "pop_female": 536303
+  },
+  {
+    "state": "Rhode Island",
+    "region": "Northeast",
+    "pop": 1097379,
+    "pop_male": 533444,
+    "pop_female": 563935
+  },
+  {
+    "state": "Delaware",
+    "region": "South",
+    "pop": 989948,
+    "pop_male": 479264,
+    "pop_female": 510684
+  },
+  {
+    "state": "South Dakota",
+    "region": "Midwest",
+    "pop": 886667,
+    "pop_male": 447848,
+    "pop_female": 438819
+  },
+  {
+    "state": "North Dakota",
+    "region": "Midwest",
+    "pop": 779094,
+    "pop_male": 398625,
+    "pop_female": 380469
+  },
+  {
+    "state": "Alaska",
+    "region": "West",
+    "pop": 733391,
+    "pop_male": 384065,
+    "pop_female": 349326
+  },
+  {
+    "state": "Vermont",
+    "region": "Northeast",
+    "pop": 643077,
+    "pop_male": 317663,
+    "pop_female": 325414
+  },
+  {
+    "state": "Wyoming",
+    "region": "West",
+    "pop": 576851,
+    "pop_male": 293957,
+    "pop_female": 282894
+  }
 ]
