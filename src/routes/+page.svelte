@@ -22,6 +22,8 @@
     let copySqlMessage = "";
     let copySqlTimeout: ReturnType<typeof setTimeout> | null = null;
     let selectedHistory: QueryHistory | null = null;
+    let parserType: "typescript" | "go" = "typescript";
+    let goApiUrl = "http://localhost:8080";
 
     // Sample data for suggestions
     const sampleJsons = [
@@ -168,7 +170,7 @@
         }
     }
 
-    function executeQuery() {
+    async function executeQuery() {
         if (!query.trim()) return;
         if (!currentTable || !tables[currentTable]) {
             result = { success: false, error: "No JSON data loaded." };
@@ -177,18 +179,62 @@
         loading = true;
         queryTime = null;
         const start = performance.now();
+        
         try {
-            const parser = new SQLParser(tables[currentTable]);
-            const parsed = parser.parse(query);
-            const res = parser.execute(parsed);
-            result = { success: true, data: res };
+            if (parserType === "go") {
+                // Use Go parser via API
+                const response = await fetch(`${goApiUrl}/execute`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        data: tables[currentTable],
+                    }),
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
+                }
+                
+                const goResult = await response.json();
+                if (!goResult.success && goResult.error) {
+                    throw new Error(goResult.error);
+                }
+                
+                result = {
+                    success: goResult.success,
+                    data: goResult.data,
+                    error: goResult.error,
+                };
+            } else {
+                // Use TypeScript parser
+                const parser = new SQLParser(tables[currentTable]);
+                const parsed = parser.parse(query);
+                const res = parser.execute(parsed);
+                result = { success: true, data: res };
+            }
+            
             queryTime = Math.round(performance.now() - start);
         } catch (error: any) {
+            let errorMessage = error.message || "Failed to execute query";
+            
+            // Provide helpful error messages for common issues
+            if (errorMessage.includes("Failed to fetch") || errorMessage.includes("NetworkError")) {
+                errorMessage = `Cannot connect to Go server at ${goApiUrl}. Make sure the Go server is running (cd go && go run cmd/server/main.go)`;
+            } else if (errorMessage.includes("HTTP")) {
+                errorMessage = `Go server error: ${errorMessage}`;
+            }
+            
             result = {
                 success: false,
-                error: error.message || "Failed to execute query",
+                error: errorMessage,
             };
+            queryTime = null;
         }
+        
         // Add to session history
         const newHistory: QueryHistory = {
             id: nextId++,
@@ -319,27 +365,6 @@
 
 <main class="container">
     <h1>SQL Query Parser</h1>
-    <div class="app-summary-card">
-        <p class="app-summary">
-            <strong>Welcome!</strong> This tool lets you quickly explore and analyze
-            your own JSON data using familiar SQL queries right in your browser,
-            with no setup or database required.
-        </p>
-        <ol class="app-guide">
-            <li>
-                <strong>Paste</strong> or <strong>upload</strong> your JSON data
-                below.
-            </li>
-            <li><strong>Preview</strong> your data instantly.</li>
-            <li>
-                <strong>Write</strong> an SQL query and click
-                <em>Execute Query</em>.
-            </li>
-            <li>
-                See results, errors, and your query history—all in one place!
-            </li>
-        </ol>
-    </div>
 
     <div class="json-input-section">
         <div class="input-mode-toggle">
@@ -449,7 +474,7 @@
                     </button>
                 </div>
                 {#if copyMessage}
-                    <div style="color:#067800;font-weight:600;">
+                    <div>
                         {copyMessage}
                     </div>
                 {/if}
@@ -468,6 +493,28 @@
             {/each}
         </div>
         <h2>SQL Query</h2>
+        <div style="margin-bottom: 0.5rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                <span>Parser:</span>
+                <select bind:value={parserType}>
+                    <option value="typescript">TypeScript (Client-side)</option>
+                    <option value="go">Go (Server-side)</option>
+                </select>
+            </label>
+            {#if parserType === "go"}
+                <div style="margin-top: 0.3rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span>Go API URL:</span>
+                        <input
+                            type="text"
+                            bind:value={goApiUrl}
+                            placeholder="http://localhost:8080"
+                            style="flex: 1; max-width: 300px;"
+                        />
+                    </label>
+                </div>
+            {/if}
+        </div>
         <textarea
             bind:value={query}
             placeholder="Enter your SQL query here..."
@@ -505,7 +552,7 @@
             </button>
         </div>
         {#if copySqlMessage}
-            <div style="color:#067800;font-weight:600;text-align:right;">
+            <div style="text-align:right;">
                 {copySqlMessage}
             </div>
         {/if}
@@ -612,28 +659,28 @@
     {#if selectedHistory}
         <div
             class="modal-backdrop"
-            style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:1000;display:flex;align-items:center;justify-content:center;"
+            style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;"
         >
             <div
                 class="modal-content"
-                style="background:#fff;padding:1.2rem 2.5rem 2rem 2.5rem;border-radius:12px;max-width:600px;width:90vw;box-shadow:0 4px 32px rgba(0,0,0,0.18);position:relative;overflow:auto;"
+                style="background:white;padding:1.2rem 2.5rem 2rem 2.5rem;border:1px solid black;max-width:600px;width:90vw;position:relative;overflow:auto;"
             >
                 <button
                     on:click={() => (selectedHistory = null)}
-                    style="position:absolute;top:1rem;right:1rem;font-size:1.5rem;background:none;border:none;cursor:pointer;color:#222;"
+                    style="position:absolute;top:1rem;right:1rem;font-size:1.5rem;background:none;border:none;cursor:pointer;color:black;"
                     >&times;</button
                 >
-                <h2 style="color:#067800;margin-top:0;">Query Details</h2>
+                <h2 style="margin-top:0;">Query Details</h2>
                 <div style="margin-bottom:1.2rem;">
-                    <strong style="color:#067800;">SQL Query:</strong><br
+                    <strong>SQL Query:</strong><br
                     /><span
-                        style="font-family:'Fira Mono',monospace;color:#067800;"
+                        style="font-family:'Courier New',monospace;"
                         >{selectedHistory.query}</span
                     >
                 </div>
                 <div style="margin-bottom:1.2rem;">
-                    <strong style="color:#067800;">Timestamp:</strong>
-                    <span style="color:#067800;"
+                    <strong>Timestamp:</strong>
+                    <span
                         >{new Date(
                             selectedHistory.timestamp,
                         ).toLocaleString()}</span
@@ -641,15 +688,15 @@
                 </div>
                 {#if selectedHistory.result.success}
                     <div style="margin-bottom:1.2rem;">
-                        <strong style="color:#067800;">Rows Returned:</strong>
-                        <span style="color:#067800;"
+                        <strong>Rows Returned:</strong>
+                        <span
                             >{selectedHistory.result.data?.length || 0}</span
                         >
                     </div>
                     <div style="margin-bottom:1.2rem;">
-                        <strong style="color:#067800;">Result Data:</strong>
+                        <strong>Result Data:</strong>
                         <pre
-                            style="background:#f7f7f7;padding:1rem;border-radius:8px;max-height:250px;overflow:auto;font-size:0.9rem;color:#067800;">{JSON.stringify(
+                            style="background:white;padding:1rem;border:1px solid black;max-height:250px;overflow:auto;font-size:0.9rem;">{JSON.stringify(
                                 selectedHistory.result.data,
                                 null,
                                 2,
@@ -674,16 +721,14 @@
                     <li style="display:flex;align-items:center;gap:0.3rem;">
                         <button
                             class="clear-btn"
-                            style="background:{currentTable === tableName
-                                ? '#b9f6ca'
-                                : '#e0e0e0'};color:#067800;font-weight:600;"
+                            class:active={currentTable === tableName}
                             on:click={() => (currentTable = tableName)}
                         >
                             {tableName}
                         </button>
                         <button
                             class="clear-btn"
-                            style="background:#ffebee;color:#c62828;font-size:0.9rem;padding:0.3rem 0.7rem;"
+                            style="font-size:0.9rem;padding:0.3rem 0.7rem;"
                             on:click={() => removeTable(tableName)}
                             title="Remove table"
                         >
@@ -696,18 +741,16 @@
     {/if}
 </main>
 
-<footer
-    style="width:100%;padding:1.2rem 0;text-align:center;background:rgba(0,61,31,0.95);color:#bdbdbd;font-size:1rem;letter-spacing:0.01em;margin-top:2rem;"
->
-    Made with Love by <a
+<footer style="width:100%;padding:1rem 0;text-align:center;border-top:1px solid black;margin-top:2rem;">
+    Made by <a
         href="https://x.com/nicholaschen__"
         target="_blank"
-        style="color:#b9f6ca;text-decoration:underline;">Nicholas Chen</a
+        style="color:black;text-decoration:underline;">Nicholas Chen</a
     >
     &middot;
     <a
         href="https://github.com/your-repo"
         target="_blank"
-        style="color:#b9f6ca;text-decoration:underline;">GitHub</a
+        style="color:black;text-decoration:underline;">GitHub</a
     >
 </footer>

@@ -3,12 +3,20 @@
 <img width="995" alt="Screenshot 2025-05-28 at 1 12 29 AM" src="https://github.com/user-attachments/assets/729695a6-d6b9-4e8c-9021-4fb33ce717e2" />
 <img width="956" alt="Screenshot 2025-05-28 at 1 12 54 AM" src="https://github.com/user-attachments/assets/a7976d9a-9b8c-459d-a0e8-976d80e8577b" />
 
-A TypeScript implementation of a SQL query parser that can query flat JSON objects. The application provides a web interface for executing SQL queries and viewing query history.
+A SQL query parser implementation in both TypeScript and Go that can query flat JSON objects. The application provides a web interface for executing SQL queries and viewing query history.
+
+## Features
+
+- **Dual Parser Support**: Choose between TypeScript (client-side) or Go (server-side) parser
+- **Web Interface**: Interactive SvelteKit frontend for querying JSON data
+- **Query History**: Track all your queries and results
+- **Export Results**: Export query results as JSON, CSV, or Excel
 
 ## Prerequisites
 
 - Node.js (v14 or higher)
 - npm (v6 or higher)
+- Go 1.21+ (optional, for Go parser)
 
 ## Installation
 
@@ -25,12 +33,49 @@ npm install
 
 ## Running the Application
 
-2. In the terminal, start the development server:
+### Option 1: TypeScript Parser (Client-side)
+
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Start the development server:
 ```bash
 npm run dev
 ```
 
 3. Open your browser and navigate to `http://localhost:5173`
+
+The TypeScript parser runs entirely in the browser - no backend needed!
+
+### Option 2: Go Parser (Server-side)
+
+1. Start the Go server:
+```bash
+cd go
+go mod tidy
+go run cmd/server/main.go
+```
+
+The Go server will start on `http://localhost:8080` (or the port specified in the `PORT` environment variable).
+
+2. In another terminal, start the frontend:
+```bash
+npm run dev
+```
+
+3. Open your browser and navigate to `http://localhost:5173`
+
+4. In the UI, select "Go (Server-side)" from the Parser dropdown to use the Go parser.
+
+### Switching Between Parsers
+
+The frontend includes a parser selector that lets you switch between:
+- **TypeScript (Client-side)**: Runs entirely in the browser, no backend required
+- **Go (Server-side)**: Requires the Go server to be running, offers better performance for large datasets
+
+See the [Go Parser README](go/README.md) for more details about the Go implementation.
 
 ## Example Queries
 

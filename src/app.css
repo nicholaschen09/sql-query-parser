@@ -1,27 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital,wght@0,400;1,400&family=Inter:wght@400;600;700&display=swap');
-
-:root {
-    --primary-green: #00c853;
-    --primary-green-dark: #009624;
-    --background: #003d1f;
-    --card-bg: #fff;
-    --border: #1b5e20;
-    --text: #fff;
-    --text-light: #bdbdbd;
-    --error-bg: #ffebee;
-    --error-text: #c62828;
-    --success-text: #00c853;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 html,
 body {
-    background: var(--background);
-    color: var(--text);
-    font-family: 'Inter', 'Roboto', 'Segoe UI', Arial, sans-serif;
+    background: white;
+    color: black;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
     min-height: 100vh;
     width: 100vw;
-    margin: 0;
-    padding: 0;
 }
 
 .container {
@@ -30,31 +21,34 @@ body {
     padding: 2rem;
 }
 
-h1,
-h2,
-h3 {
-    font-family: 'DM Serif Display', 'Playfair Display', serif;
+h1 {
+    font-size: 24px;
     font-weight: 400;
-    letter-spacing: 0.01em;
+    margin-bottom: 2rem;
 }
 
-h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 2rem;
+h2 {
+    font-size: 16px;
+    font-weight: 400;
+    margin-bottom: 1rem;
+}
+
+h3 {
+    font-size: 14px;
+    font-weight: 400;
+    margin: 0;
+}
+
+p {
+    margin: 0.5rem 0;
+    color: black;
 }
 
 .query-section {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    padding: 1.2rem 1.5rem 2rem;
+    background: white;
+    border: 1px solid black;
+    padding: 1rem;
     margin-bottom: 2rem;
-    color: #222;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
 }
 
 .query-section h2 {
@@ -65,165 +59,160 @@ h1 {
 .query-section textarea,
 .raw-json-section textarea {
     width: 100%;
-    min-width: 100%;
-    max-width: 100%;
     box-sizing: border-box;
-    font-family: "Fira Mono", monospace;
-    margin-left: 0;
-    margin-right: 0;
-}
-
-.query-section textarea {
-    margin-bottom: 1.5rem;
-    margin-top: -1.5rem;
-    font-size: 1.15rem;
-    padding: 1.1rem;
-    background: #f7f7f7;
-    color: #067800;
-    transition: border 0.2s;
-    min-height: 160px;
-    max-height: 350px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    padding: 0.5rem;
+    background: white;
+    color: black;
+    border: 1px solid black;
+    border-radius: 0;
     resize: vertical;
-    overflow-y: auto;
-    border: 1.5px solid #bdbdbd;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    overflow-x: hidden;
-    white-space: pre-wrap;
-}
-
-/* --- Unified custom scrollbar styles for textarea and JSON preview --- */
-.query-section textarea,
-.json-preview {
-    scrollbar-width: thin;
-    /* Firefox */
-    scrollbar-color: #009624 #e0e0e0;
-    /* Firefox */
-    overflow-x: hidden;
-    white-space: pre-wrap;
-}
-
-.query-section textarea::-webkit-scrollbar,
-.json-preview::-webkit-scrollbar {
-    width: 10px;
-    background: #e0e0e0;
-    border-radius: 6px;
-}
-
-.query-section textarea::-webkit-scrollbar-thumb,
-.json-preview::-webkit-scrollbar-thumb {
-    background: #009624;
-    border-radius: 6px;
+    min-height: 120px;
+    margin-bottom: 1rem;
 }
 
 .query-section textarea:focus,
-.json-preview:focus {
-    border-color: #009624;
-    outline: none;
+.raw-json-section textarea:focus {
+    outline: 1px solid black;
+    outline-offset: -1px;
 }
 
 .query-actions {
     display: flex;
-    gap: 0.7rem;
+    gap: 0.5rem;
     margin-bottom: 0;
-    justify-content: flex-start;
 }
 
 button,
 .clear-btn {
-    padding: 0.65rem 1.5rem;
-    background-color: var(--primary-green);
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    font-size: 1.05rem;
-    font-weight: 600;
+    padding: 0.5rem 1rem;
+    background: black;
+    color: white;
+    border: 1px solid black;
+    border-radius: 0;
+    font-size: 12px;
+    font-weight: 400;
     cursor: pointer;
-    transition:
-        background 0.2s,
-        box-shadow 0.2s;
-    box-shadow: 0 1px 4px rgba(0, 200, 83, 0.07);
-    min-width: 140px;
+    font-family: inherit;
 }
 
 button:disabled,
 .clear-btn:disabled {
-    background-color: #e0e0e0;
-    color: #aaa;
+    background: #ccc;
+    color: #666;
+    border-color: #ccc;
     cursor: not-allowed;
 }
 
 button:hover:not(:disabled),
 .clear-btn:hover:not(:disabled) {
-    background-color: var(--primary-green-dark);
+    background: #333;
 }
 
 .clear-btn {
-    background: #e0e0e0;
-    color: #222;
-    border: none;
-    border-radius: 6px;
-    font-size: 1.05rem;
-    font-weight: 500;
-    transition: background 0.2s;
+    background: white;
+    color: black;
+    border: 1px solid black;
 }
 
 .clear-btn:disabled {
-    background: #f3f3f3;
-    color: #bbb;
+    background: #f5f5f5;
+    color: #999;
+    border-color: #ccc;
+}
+
+.clear-btn.active {
+    background: black;
+    color: white;
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 1.2rem 2.5rem 2rem 2.5rem;
+    border: 1px solid black;
+    max-width: 600px;
+    width: 90vw;
+    position: relative;
+    overflow: auto;
+}
+
+.table-list-section {
+    margin-top: 2rem;
+    padding: 1rem;
+    border: 1px solid black;
+}
+
+.table-list-section h3 {
+    margin-bottom: 0.5rem;
+}
+
+.table-list-section ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
 .result-section {
-    margin-top: 5rem;
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    padding: 1rem 5rem 2rem 2rem;
+    margin-top: 2rem;
+    background: white;
+    border: 1px solid black;
+    padding: 1rem;
     margin-bottom: 2rem;
-    color: #222;
 }
 
 .result-section h2 {
-    color: var(--primary-green-dark);
-    margin-top: 0.2rem;
-    margin-bottom: 0.3rem;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 0;
-    background: var(--card-bg);
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    background: white;
 }
 
 th,
 td {
-    border: 1px solid var(--border);
-    padding: 0.75rem 1rem;
+    border: 1px solid black;
+    padding: 0.5rem;
     text-align: left;
+    font-size: 12px;
 }
 
 th {
-    background: #f5f5f5;
-    color: var(--primary-green-dark);
-    font-weight: 700;
+    background: white;
+    color: black;
+    font-weight: 400;
 }
 
 tr:nth-child(even) td {
-    background: #fafafa;
+    background: white;
 }
 
 .error {
-    color: var(--error-text);
-    background: var(--error-bg);
-    padding: 1rem;
-    border-radius: 6px;
+    color: black;
+    background: white;
+    padding: 0.5rem;
+    border: 1px solid black;
     margin-top: 1rem;
-    font-weight: 500;
+    font-weight: 400;
 }
 
 .history-section {
@@ -231,60 +220,55 @@ tr:nth-child(even) td {
 }
 
 .history-item {
-    border: 1px solid var(--border);
-    background: var(--card-bg);
-    border-radius: 8px;
-    padding: 1rem 1.5rem;
-    margin-bottom: 1.2rem;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-    color: #222;
+    border: 1px solid black;
+    background: white;
+    padding: 1rem;
+    margin-bottom: 1rem;
 }
 
 .history-item .query {
-    font-family: "Fira Mono", monospace;
+    font-family: 'Courier New', monospace;
     margin-bottom: 0.5rem;
-    color: var(--primary-green-dark);
-    font-size: 1.05rem;
+    color: black;
+    font-size: 12px;
 }
 
 .history-item .timestamp {
-    color: var(--text-light);
-    font-size: 0.95rem;
-    margin-bottom: 0.1rem;
+    color: #666;
+    font-size: 11px;
+    margin-bottom: 0.5rem;
 }
 
 .history-item .success {
-    color: var(--success-text);
-    font-weight: 600;
-    margin-top: 0.2rem;
+    color: black;
+    font-weight: 400;
+    margin-top: 0.5rem;
 }
 
 .history-item .error {
-    color: var(--error-text);
-    background: var(--error-bg);
-    border-radius: 4px;
-    padding: 0.5rem 1rem;
+    color: black;
+    background: white;
+    border: 1px solid black;
+    padding: 0.5rem;
     margin-top: 0.5rem;
-    font-weight: 500;
+    font-weight: 400;
 }
 
 .json-input-section {
-    margin-bottom: 2.2rem;
+    margin-bottom: 2rem;
 }
 
 .upload-zone {
-    border: 2px dashed var(--border);
-    border-radius: 12px;
+    border: 1px dashed black;
     padding: 2rem;
     text-align: center;
-    background: rgba(255, 255, 255, 0.05);
-    transition: all 0.3s ease;
+    background: white;
     cursor: pointer;
 }
 
 .upload-zone.dragging {
-    border-color: var(--primary-green);
-    background: rgba(0, 200, 83, 0.1);
+    border-color: black;
+    background: #f5f5f5;
 }
 
 .upload-content {
@@ -295,22 +279,22 @@ tr:nth-child(even) td {
 }
 
 .upload-icon {
-    color: var(--primary-green);
+    color: black;
     margin-bottom: 1rem;
 }
 
 .upload-button {
-    background: var(--primary-green);
+    background: black;
     color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    border: 1px solid black;
     cursor: pointer;
-    font-weight: 600;
-    transition: background 0.2s;
+    font-weight: 400;
+    font-size: 12px;
 }
 
 .upload-button:hover {
-    background: var(--primary-green-dark);
+    background: #333;
 }
 
 .hidden {
@@ -319,37 +303,33 @@ tr:nth-child(even) td {
 
 .preview-section {
     margin-top: 1.5rem;
-    background: var(--card-bg);
-    border-radius: 8px;
-    padding: 1.5rem;
-    color: #222;
+    background: white;
+    padding: 1rem;
 }
 
 .json-preview {
-    font-family: "Fira Mono", monospace;
-    font-size: 0.8rem;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
     margin: 1rem 0;
-    max-height: 350px;
-    padding: 1.1rem;
-    background: #f7f7f7;
-    color: #067800;
-    border: 1.5px solid #bdbdbd;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    overflow-x: hidden;
+    max-height: 300px;
+    padding: 0.5rem;
+    background: white;
+    color: black;
+    border: 1px solid black;
+    overflow-x: auto;
     white-space: pre-wrap;
 }
 
 .preview-note {
     color: #666;
-    font-size: 0.9rem;
+    font-size: 11px;
     margin: 0;
 }
 
 .result-meta {
     margin: 0;
-    color: #222;
-    font-size: 1.05rem;
+    color: black;
+    font-size: 12px;
 }
 
 .table-container {
@@ -357,257 +337,165 @@ tr:nth-child(even) td {
     margin-top: 0;
 }
 
-h2 {
-    color: var(--text);
-    margin-bottom: 1rem;
-    font-size: 1.5rem;
-}
-
-h3 {
-    color: var(--text);
-    margin: 0;
-    font-size: 1.2rem;
-}
-
-p {
-    margin: 0.5rem 0;
-    color: var(--text-light);
-}
-
 .input-mode-toggle {
     display: flex;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
 }
 
 .toggle-btn {
     flex: 1;
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text);
-    border: 1px solid var(--border);
-    padding: 0.75rem;
-    border-radius: 6px;
-    font-weight: 500;
-    transition: all 0.2s;
+    background: white;
+    color: black;
+    border: 1px solid black;
+    padding: 0.5rem;
+    font-weight: 400;
+    font-size: 12px;
 }
 
 .toggle-btn.active {
-    background: var(--primary-green);
-    border-color: var(--primary-green);
+    background: black;
+    color: white;
 }
 
 .toggle-btn:hover:not(.active) {
-    background: rgba(255, 255, 255, 0.15);
+    background: #f5f5f5;
 }
 
 .raw-json-section {
-    background: var(--card-bg);
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    background: white;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid black;
 }
 
 .raw-json-section textarea {
-    font-size: 1.15rem;
+    font-size: 12px;
     line-height: 1.5;
-    background: #f5f5f5;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 1rem;
-    color: #222;
-    height: 200px;
-    min-height: 200px;
-    max-height: 200px;
+    background: white;
+    border: 1px solid black;
+    padding: 0.5rem;
+    color: black;
+    height: 150px;
+    min-height: 150px;
+    max-height: 150px;
     resize: none;
 }
 
-.raw-json-section textarea:focus {
-    border-color: var(--primary-green);
-    outline: none;
-}
-
-/* Ensure Preview title is green */
-.preview-section h2 {
-    color: #067800;
-    margin-bottom: 1rem;
-    margin-top: -2px;
-}
-
-.table-container {
-    overflow-x: auto;
-    margin-top: 1rem;
-}
-
-h2 {
-    color: var(--text);
-    margin-bottom: 1rem;
-    font-size: 1.5rem;
-}
-
-h3 {
-    color: var(--text);
-    margin: 0;
-    font-size: 1.2rem;
-}
-
-p {
-    margin: 0.5rem 0;
-    color: var(--text-light);
-}
-
 .sample-suggestions {
-    margin: 1.2rem 0 2rem 0;
+    margin: 1rem 0;
     display: flex;
     align-items: center;
-    gap: 0.7rem;
+    gap: 0.5rem;
     flex-wrap: wrap;
-    padding: 1rem 1.5rem;
-    background: rgba(0, 150, 36, 0.07);
-    border: 1.5px solid #b9f6ca;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 200, 83, 0.06);
-    justify-content: flex-start;
+    padding: 0.5rem;
+    background: white;
+    border: 1px solid black;
 }
 
 .sample-suggestions span {
-    font-weight: 600;
-    font-size: 1.08rem;
+    font-weight: 400;
+    font-size: 12px;
     margin-right: 0.5rem;
 }
 
 .sample-suggestions button {
-    background: #e0e0e0;
-    color: #067800;
-    border: 2px solid #009624;
-    border-radius: 20px;
-    padding: 0.5rem 1.4rem;
-    font-size: 1.08rem;
-    font-weight: 700;
+    background: white;
+    color: black;
+    border: 1px solid black;
+    padding: 0.25rem 0.5rem;
+    font-size: 11px;
+    font-weight: 400;
     cursor: pointer;
-    transition: background 0.2s, box-shadow 0.2s, border-color 0.2s;
-    box-shadow: 0 1px 4px rgba(0, 200, 83, 0.09);
-    outline: none;
 }
 
 .sample-suggestions button:hover {
-    background: #b9f6ca;
-    border-color: #00c853;
-    box-shadow: 0 2px 8px rgba(0, 200, 83, 0.18);
-}
-
-.json-input-section .sample-suggestions span {
-    color: #fff;
-}
-
-.sample-suggestions span {
-    color: #222;
-}
-
-.raw-json-section h2 {
-    margin-top: -2px;
-    color: #067800;
+    background: #f5f5f5;
 }
 
 .app-summary-card {
-    background: #f7f7f7;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    padding: 1.2rem 2rem 1.2rem 2rem;
-    margin-bottom: 2.2rem;
-    border: 1.5px solid #b9f6ca;
-    width: 100%;
-    box-sizing: border-box;
+    background: white;
+    border: 1px solid black;
+    padding: 1rem;
+    margin-bottom: 2rem;
 }
 
 .app-summary {
-    color: #067800;
-    font-size: 1.13rem;
-    margin-bottom: 0.7rem;
-    text-align: center;
+    color: black;
+    font-size: 12px;
+    margin-bottom: 0.5rem;
+    text-align: left;
 }
 
 .app-guide {
-    color: #222;
-    font-size: 1.05rem;
+    color: black;
+    font-size: 12px;
     margin: 0;
-    padding-left: 1.2rem;
+    padding-left: 1rem;
     text-align: left;
 }
 
 .app-guide li {
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.25rem;
 }
 
-.app-summary-card,
-.app-summary-card * {
-    font-family: 'DM Serif Display', 'Playfair Display', serif !important;
-    font-weight: 400;
-    letter-spacing: 0.01em;
+select,
+input[type="text"] {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid black;
+    border-radius: 0;
+    background: white;
+    color: black;
+    font-size: 12px;
+    font-family: inherit;
 }
 
-/* Keep Inter for code, buttons, and monospace areas */
-button,
-.clear-btn,
-.json-preview,
-.history-item .query,
-.query-section textarea,
-.raw-json-section textarea {
-    font-family: 'Inter', 'Roboto', 'Segoe UI', Arial, sans-serif !important;
+select:focus,
+input[type="text"]:focus {
+    outline: 1px solid black;
+    outline-offset: -1px;
 }
 
-.sample-suggestions,
-.sample-suggestions *,
-.sample-suggestions button {
-    font-family: 'DM Serif Display', 'Playfair Display', serif !important;
-    font-weight: 400;
-    letter-spacing: 0.01em;
+label {
+    font-size: 12px;
+    color: black;
+}
+
+.spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 1px solid white;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 @media (max-width: 600px) {
     .container {
-        padding: 0.7rem;
-    }
-
-    .app-summary-card {
-        padding: 0.7rem 0.7rem 0.7rem 0.7rem;
-        font-size: 0.98rem;
-    }
-
-    .app-summary {
-        font-size: 1rem;
-    }
-
-    .app-guide {
-        font-size: 0.97rem;
-        padding-left: 0.7rem;
-    }
-
-    .sample-suggestions {
-        padding: 0.7rem;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-
-    .sample-suggestions button {
-        width: 100%;
-        min-width: 0;
-        text-align: left;
-        font-size: 1rem;
-        padding: 0.5rem 0.7rem;
+        padding: 1rem;
     }
 
     .query-actions {
         flex-direction: column;
         align-items: stretch;
-        gap: 0.7rem;
     }
 
     .query-actions button,
     .query-actions .clear-btn {
         width: 100%;
-        min-width: 0;
-        box-sizing: border-box;
-        margin: 0;
+    }
+
+    .sample-suggestions {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .sample-suggestions button {
+        width: 100%;
     }
 }
