@@ -696,6 +696,7 @@
     {#if history.length > 0}
         <div class="history-section">
             <h2>Query History ({history.length})</h2>
+            <div class="history-scroll">
             {#each history as item}
                 <div
                     class="history-item"
@@ -715,6 +716,7 @@
                     {/if}
                 </div>
             {/each}
+            </div>
         </div>
     {/if}
 

@@ -269,6 +269,18 @@ tr:nth-child(even) td {
 
 .history-section {
     margin-top: 2rem;
+    border: 1px solid black;
+    padding: 1rem;
+    background: #fafafa;
+}
+
+.history-section h2 {
+    margin-top: 0;
+}
+
+.history-scroll {
+    max-height: 400px;
+    overflow-y: auto;
 }
 
 .history-item {
