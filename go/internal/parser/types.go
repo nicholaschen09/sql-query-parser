@@ -20,18 +20,18 @@ const (
 
 // Condition represents a WHERE condition
 type Condition struct {
-	Left     interface{} `json:"left"`     // string or Condition
+	Left     interface{} `json:"left"` // string or Condition
 	Operator Operator    `json:"operator"`
-	Right    interface{} `json:"right"`    // string, number, or Condition
+	Right    interface{} `json:"right"` // string, number, or Condition
 }
 
 // SelectQuery represents a parsed SELECT query
 type SelectQuery struct {
-	Type    string    `json:"type"`
-	Columns []string  `json:"columns"`
-	Table   string    `json:"table"`
+	Type    string     `json:"type"`
+	Columns []string   `json:"columns"`
+	Table   string     `json:"table"`
 	Where   *Condition `json:"where,omitempty"`
-	Limit   *int      `json:"limit,omitempty"`
+	Limit   *int       `json:"limit,omitempty"`
 }
 
 // QueryResult represents the result of executing a query
