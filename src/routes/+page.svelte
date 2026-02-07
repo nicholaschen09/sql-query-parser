@@ -773,34 +773,7 @@
         </div>
     {/if}
 
-    {#if Object.keys(tables).length > 0}
-        <div class="table-list-section">
-            <h3>Loaded Tables</h3>
-            <ul
-                style="list-style:none;padding:0;display:flex;gap:1rem;flex-wrap:wrap;"
-            >
-                {#each Object.keys(tables) as tableName}
-                    <li style="display:flex;align-items:center;gap:0.3rem;">
-                        <button
-                            class="clear-btn"
-                            class:active={currentTable === tableName}
-                            on:click={() => (currentTable = tableName)}
-                        >
-                            {tableName}
-                        </button>
-                        <button
-                            class="clear-btn"
-                            style="font-size:0.9rem;padding:0.3rem 0.7rem;"
-                            on:click={() => removeTable(tableName)}
-                            title="Remove table"
-                        >
-                            ✕
-                        </button>
-                    </li>
-                {/each}
-            </ul>
-        </div>
-    {/if}
+
 </main>
 
 <footer>
