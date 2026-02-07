@@ -288,6 +288,10 @@ tr:nth-child(even) td {
     text-align: center;
     background: white;
     cursor: pointer;
+    min-height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .upload-zone.dragging {
@@ -391,6 +395,9 @@ tr:nth-child(even) td {
     padding: 1rem;
     margin-bottom: 1rem;
     border: 1px solid black;
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
 }
 
 .raw-json-section textarea {
@@ -400,9 +407,8 @@ tr:nth-child(even) td {
     border: 1px solid black;
     padding: 0.5rem;
     color: black;
-    height: 150px;
-    min-height: 150px;
-    max-height: 150px;
+    flex: 1;
+    min-height: 0;
     resize: none;
 }
 

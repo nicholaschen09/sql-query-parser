@@ -13,6 +13,7 @@
             This SQL parser is a minimal implementation that transforms SQL queries into executable operations on JSON data. 
             Here's how it works under the hood.
         </p>
+        <img src="/sql-string.png" alt="Example SQL query selecting data from a table with results shown" class="blog-image" />
 
         <section>
             <h2>Architecture Overview</h2>
@@ -21,6 +22,7 @@
                 The parsing phase converts a SQL string into an abstract syntax tree (AST), and the execution phase 
                 runs that AST against the provided JSON data.
             </p>
+            <img src="/parser.png" alt="Parser architecture: grammar flows into parser generator, which produces a parser that takes tokens and outputs an intermediate representation" class="blog-image" />
         </section>
 
         <section>
@@ -36,6 +38,7 @@
             </ul>
             <pre class="code-block">SELECT state, pop FROM table WHERE pop > 5000
 // Becomes: ["SELECT", "state", ",", "pop", "FROM", "table", "WHERE", "pop", ">", "5000"]</pre>
+            <img src="/tokenization.png" alt="Tokenization: sentences are broken down into individual word tokens" class="blog-image" />
         </section>
 
         <section>
@@ -69,6 +72,7 @@
 //   pop > 3000,
 //   AND(region = 'West', pop > 500)
 // )</pre>
+            <img src="/ast.png" alt="Abstract syntax tree: expressions are parsed into a tree structure with operators and operands" class="blog-image" />
         </section>
 
         <section>
@@ -253,6 +257,17 @@
         margin: 1.25rem 0;
         white-space: pre;
         letter-spacing: 0.3px;
+    }
+
+    .blog-image {
+        display: block;
+        max-width: 700px;
+        width: 100%;
+        margin: 1.5rem auto;
+        border: 1px solid black;
+        padding: 1rem;
+        background: #fafafa;
+        box-sizing: border-box;
     }
 
     .blog-content strong {
