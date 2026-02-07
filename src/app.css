@@ -169,7 +169,7 @@ button:hover:not(:disabled) {
 }
 
 .icon-btn:hover {
-    background: #f5f5f5;
+    background: #f5f5f5 !important;
 }
 
 .modal-backdrop {
@@ -580,7 +580,8 @@ input[type="text"]:focus {
     background: #f7f7f7 !important;
 }
 
-.dropdown-option.active {
+.dropdown-option.active,
+.dropdown-option.active:hover {
     background: #f2f2f2 !important;
     color: black;
 }
