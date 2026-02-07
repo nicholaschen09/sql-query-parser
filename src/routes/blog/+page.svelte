@@ -26,6 +26,51 @@
         </section>
 
         <section>
+            <h2>What is an AST?</h2>
+            <p>
+                An <strong>Abstract Syntax Tree</strong> (AST) is a tree-shaped data structure that represents the 
+                structure of code after parsing. Instead of working with a flat string, the parser converts the query 
+                into a tree of nested objects that the executor can walk through.
+            </p>
+            <p>
+                For example, a flat SQL string like this:
+            </p>
+            <pre class="code-block">SELECT state, pop FROM table WHERE pop > 5000 AND region = 'West'</pre>
+            <p>
+                Gets transformed into a structured tree:
+            </p>
+            <pre class="code-block">SelectQuery
+├── type: "SELECT"
+├── columns: ["state", "pop"]
+├── table: "table"
+└── where:
+          AND
+         /   \
+        /     \
+    pop>5000   region='West'</pre>
+            <p>
+                <strong>Why a tree?</strong> Because it captures nesting and precedence. Consider the expression 
+                <code>A OR B AND C</code>. This means <code>A OR (B AND C)</code>, not <code>(A OR B) AND C</code>. 
+                The tree naturally encodes this:
+            </p>
+            <pre class="code-block">      OR
+     /  \
+    A   AND
+       /   \
+      B     C</pre>
+            <p>
+                <code>AND</code> is deeper in the tree, so it gets evaluated first. The executor walks the tree 
+                bottom-up — it evaluates the leaf nodes, then combines results as it moves back up to the root.
+            </p>
+            <p>
+                In the parser, each node is a <code>Condition</code> object with <code>{'{'}left, operator, right{'}'}</code> where 
+                <code>left</code> and <code>right</code> can themselves be <code>Condition</code> objects. That 
+                recursion is what makes it a tree.
+            </p>
+            <img src="/ast.png" alt="Abstract syntax tree: expressions are parsed into a tree structure with operators and operands" class="blog-image" />
+        </section>
+
+        <section>
             <h2>1. Tokenization</h2>
             <p>
                 The first step is breaking down the SQL query into tokens. The parser:
@@ -72,7 +117,6 @@
 //   pop > 3000,
 //   AND(region = 'West', pop > 500)
 // )</pre>
-            <img src="/ast.png" alt="Abstract syntax tree: expressions are parsed into a tree structure with operators and operands" class="blog-image" />
         </section>
 
         <section>
