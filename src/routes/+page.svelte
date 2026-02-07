@@ -366,7 +366,7 @@
 <div class="page-wrapper">
 <main class="container">
     <h1>SQL Query Parser</h1>
-    <a href="/blog" class="blog-link">How it works</a> · <a href="https://github.com/nicholaschen09/sql-query-parser" class="blog-link" target="_blank">GitHub</a>
+    <div class="header-links"><a href="/blog" class="blog-link">How it works</a><a href="https://github.com/nicholaschen09/sql-query-parser" class="blog-link github-link" target="_blank">GitHub</a></div>
 
     <div class="json-input-section">
         <div class="input-mode-toggle">
@@ -404,8 +404,10 @@
         </div>
 
         {#if inputMode === "file"}
-            <div
+                <div
                 class="upload-zone"
+                role="button"
+                tabindex="0"
                 class:dragging={isDragging}
                 on:dragover={handleDragOver}
                 on:dragleave={handleDragLeave}
@@ -523,7 +525,7 @@
             rows="4"
             style="width:100%;"
         ></textarea>
-        <div
+                <div
             style="display:flex;align-items:center;justify-content:space-between;margin-top:0.3rem;gap:1rem;"
         >
             <div class="query-actions" style="margin:0;">
@@ -639,6 +641,14 @@
             {#each history as item}
                 <div
                     class="history-item"
+                    role="button"
+                    tabindex="0"
+                    on:keydown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            selectedHistory = item;
+                        }
+                    }}
                     style="cursor:pointer;"
                     on:click={() => (selectedHistory = item)}
                 >
@@ -659,11 +669,11 @@
     {/if}
 
     {#if selectedHistory}
-        <div
+                <div
             class="modal-backdrop"
             style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;"
         >
-            <div
+                <div
                 class="modal-content"
                 style="background:white;padding:1.2rem 2.5rem 2rem 2.5rem;border:1px solid black;max-width:600px;width:90vw;position:relative;overflow:auto;"
             >
