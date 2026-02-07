@@ -247,6 +247,16 @@
         loading = false;
     }
 
+    function clearJsonInput() {
+        jsonInput = "";
+        tables = {};
+        currentTable = null;
+        previewData = "";
+        jsonError = null;
+        result = null;
+        queryTime = null;
+    }
+
     function clearQuery() {
         query = "";
         result = null;
@@ -404,7 +414,12 @@
         </div>
 
         {#if inputMode === "file"}
-                <div
+            {#if currentTable}
+                <div style="display:flex;justify-content:flex-end;margin-bottom:0.5rem;">
+                    <button class="clear-btn" on:click={clearJsonInput}>Clear Input</button>
+                </div>
+            {/if}
+            <div
                 class="upload-zone"
                 role="button"
                 tabindex="0"
@@ -440,7 +455,12 @@
             </div>
         {:else}
             <div class="raw-json-section">
-                <h2>JSON Input</h2>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <h2 style="margin:0;">JSON Input</h2>
+                    {#if jsonInput}
+                        <button class="clear-btn" on:click={clearJsonInput}>Clear Input</button>
+                    {/if}
+                </div>
                 <textarea
                     bind:value={jsonInput}
                     placeholder="Paste your JSON data here..."
@@ -471,7 +491,6 @@
                     </p>
                     <button
                         class="clear-btn"
-                        style="margin-left:1rem;"
                         on:click={() => copyToClipboard(previewData)}
                     >
                         Copy to Clipboard
