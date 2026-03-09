@@ -22,18 +22,6 @@
 	let copySqlMessage = '';
 	let copySqlTimeout: ReturnType<typeof setTimeout> | null = null;
 	let selectedHistory: QueryHistory | null = null;
-	let parserType: 'typescript' | 'go' | 'rust' | 'haskell' = 'typescript';
-	let goApiUrl = 'http://localhost:8080';
-	let rustApiUrl = 'http://localhost:8081';
-	let haskellApiUrl = 'http://localhost:8082';
-	let parserDropdownOpen = false;
-
-	const parserLabels: Record<string, string> = {
-		typescript: 'TypeScript (Client-side)',
-		go: 'Go (Server-side)',
-		rust: 'Rust (Server-side)',
-		haskell: 'Haskell (Server-side)'
-	};
 
 	// Sample data for suggestions
 	const sampleJsons = [
@@ -179,7 +167,7 @@
 		}
 	}
 
-	async function executeQuery() {
+	function executeQuery() {
 		if (!query.trim()) return;
 		if (!currentTable || !tables[currentTable]) {
 			result = { success: false, error: 'No JSON data loaded.' };
@@ -190,60 +178,16 @@
 		const start = performance.now();
 
 		try {
-			if (parserType === 'typescript') {
-				// Use TypeScript parser (pass all tables for JOIN support)
-				const parser = new SQLParser(tables);
-				const parsed = parser.parse(query);
-				const res = parser.execute(parsed);
-				result = { success: true, data: res };
-			} else {
-				// Use server-side parser via API
-				let apiUrl = goApiUrl;
-				if (parserType === 'rust') apiUrl = rustApiUrl;
-				if (parserType === 'haskell') apiUrl = haskellApiUrl;
-
-				const response = await fetch(`${apiUrl}/execute`, {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify({
-						query: query,
-						tables: tables
-					})
-				});
-
-				if (!response.ok) {
-					const errorText = await response.text();
-					throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
-				}
-
-				const serverResult = await response.json();
-				if (!serverResult.success && serverResult.error) {
-					throw new Error(serverResult.error);
-				}
-
-				result = {
-					success: serverResult.success,
-					data: serverResult.data,
-					error: serverResult.error
-				};
-			}
-
+			// Use TypeScript parser (pass all tables for JOIN support)
+			const parser = new SQLParser(tables);
+			const parsed = parser.parse(query);
+			const res = parser.execute(parsed);
+			result = { success: true, data: res };
 			queryTime = Math.round(performance.now() - start);
 		} catch (error: any) {
-			let errorMessage = error.message || 'Failed to execute query';
-
-			// Provide helpful error messages for common issues
-			if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
-				errorMessage = `Cannot connect to ${parserType} server. Make sure the server is running.`;
-			} else if (errorMessage.includes('HTTP')) {
-				errorMessage = `Server error: ${errorMessage}`;
-			}
-
 			result = {
 				success: false,
-				error: errorMessage
+				error: error.message || 'Failed to execute query'
 			};
 			queryTime = null;
 		}
@@ -518,73 +462,7 @@
 				{/each}
 			</div>
 			<h2>SQL Query</h2>
-			<div style="margin-bottom: 0.5rem;">
-				<div style="display: flex; align-items: center; gap: 0.5rem;">
-					<span>Parser:</span>
-					<div class="custom-dropdown">
-						<button
-							class="dropdown-button"
-							on:click={() => (parserDropdownOpen = !parserDropdownOpen)}
-						>
-							{parserLabels[parserType]}
-							<span class="dropdown-arrow">{parserDropdownOpen ? '▲' : '▼'}</span>
-						</button>
-						{#if parserDropdownOpen}
-							<div class="dropdown-menu">
-								{#each Object.entries(parserLabels) as [key, label]}
-									<button
-										class="dropdown-option"
-										class:active={parserType === key}
-										on:click={() => {
-											parserType = key as 'typescript' | 'go' | 'rust' | 'haskell';
-											parserDropdownOpen = false;
-										}}
-									>
-										{label}
-									</button>
-								{/each}
-							</div>
-						{/if}
-					</div>
-				</div>
-				{#if parserType === 'go'}
-					<div style="margin-top: 0.3rem;">
-						<label style="display: flex; align-items: center; gap: 0.5rem;">
-							<span>Go API URL:</span>
-							<input
-								type="text"
-								bind:value={goApiUrl}
-								placeholder="http://localhost:8080"
-								style="flex: 1; max-width: 300px;"
-							/>
-						</label>
-					</div>
-				{:else if parserType === 'rust'}
-					<div style="margin-top: 0.3rem;">
-						<label style="display: flex; align-items: center; gap: 0.5rem;">
-							<span>Rust API URL:</span>
-							<input
-								type="text"
-								bind:value={rustApiUrl}
-								placeholder="http://localhost:8081"
-								style="flex: 1; max-width: 300px;"
-							/>
-						</label>
-					</div>
-				{:else if parserType === 'haskell'}
-					<div style="margin-top: 0.3rem;">
-						<label style="display: flex; align-items: center; gap: 0.5rem;">
-							<span>Haskell API URL:</span>
-							<input
-								type="text"
-								bind:value={haskellApiUrl}
-								placeholder="http://localhost:8082"
-								style="flex: 1; max-width: 300px;"
-							/>
-						</label>
-					</div>
-				{/if}
-			</div>
+			<p style="margin-bottom: 0.5rem;">Parser: TypeScript (Client-side)</p>
 			<textarea
 				bind:value={query}
 				placeholder="Enter your SQL query here..."

@@ -1,20 +1,13 @@
-<script lang="ts">
-	import { goto } from '$app/navigation';
-</script>
-
 <div class="page-wrapper">
 	<main class="container">
-		<button class="back-button" on:click={() => goto('/')}>← Back</button>
+		<a class="back-button" href="/">← Back</a>
 
 		<h1>How the SQL Query Parser Works</h1>
 
 		<article class="blog-content">
 			<p class="intro">
-				This SQL query parser is implemented in <strong>four languages</strong> — TypeScript, Go, Rust, and
-				Haskell — each using the same algorithm to transform SQL queries into executable operations on
-				JSON data. The TypeScript version runs client-side in the browser, while Go, Rust, and Haskell
-				each provide a server-side HTTP API. Here's how they all work under the hood, using the Go implementation
-				as the reference.
+				This project uses a <strong>TypeScript-only</strong> SQL parser that transforms SQL queries into
+				executable operations on JSON data directly in the browser.
 			</p>
 			<img
 				src="/sql-string.png"
@@ -25,391 +18,102 @@
 			<section>
 				<h2>Architecture Overview</h2>
 				<p>
-					Every implementation follows the same three-stage pipeline: <strong>tokenization</strong>,
-					<strong>parsing</strong>, and <strong>execution</strong>. A SQL string goes in, tokens
-					come out of stage one, an abstract syntax tree (AST) comes out of stage two, and query
-					results come out of stage three.
+					The parser follows a three-stage pipeline: <strong>tokenization</strong>, <strong>parsing</strong>,
+					and <strong>execution</strong>. SQL text goes in, an AST is produced, and filtered/projected rows
+					come out.
 				</p>
 				<img
 					src="/parser.png"
-					alt="Parser architecture: grammar flows into parser generator, which produces a parser that takes tokens and outputs an intermediate representation"
+					alt="Parser architecture: SQL input flows through tokenization, parsing, and execution"
 					class="blog-image"
 				/>
-				<p>
-					Each language defines the same core structure — an <code>SQLParser</code> that holds data
-					and exposes
-					<code>parse</code> and <code>execute</code> methods:
-				</p>
-				<div class="code-label">Go</div>
-				<pre class="code-block">type SQLParser struct {'{'}
-    data []Row
-{'}'}
-
-func (p *SQLParser) Parse(query string) (*SelectQuery, error) {'{'}...{'}'}
-func (p *SQLParser) Execute(query *SelectQuery) ([]Row, error) {'{'}...{'}'}</pre>
+				<div class="code-label">TypeScript</div>
+				<pre class="code-block">class SQLParser {'{'}
+  constructor(private tables: Record&lt;string, Row[]&gt;) {'{'}{'}'}
+  parse(query: string): SelectQuery {'{'} ... {'}'}
+  execute(ast: SelectQuery): Row[] {'{'} ... {'}'}
+{'}'}</pre>
 			</section>
 
 			<section>
 				<h2>1. Tokenization</h2>
 				<p>
-					The first thing the parser does is break the raw SQL string into tokens. The tokenizer:
+					Tokenization normalizes punctuation, splits by whitespace, and removes trailing semicolons.
 				</p>
-				<ul>
-					<li>Adds spaces around parentheses and commas for easier splitting</li>
-					<li>Splits the query by whitespace</li>
-					<li>Removes trailing semicolons</li>
-					<li>Filters out empty tokens</li>
-				</ul>
-				<pre class="code-block">SELECT state, pop FROM table WHERE pop > 5000
-// Becomes: ["SELECT", "state", ",", "pop", "FROM", "table", "WHERE", "pop", ">", "5000"]</pre>
+				<pre class="code-block">private tokenize(query: string): string[] {'{'}
+  return query
+    .replace(/[(),]/g, (m) =&gt; ` ${'{'}m{'}'} `)
+    .replace(/;$/, '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+{'}'}</pre>
 				<img
 					src="/tokenization.png"
-					alt="Tokenization: sentences are broken down into individual word tokens"
+					alt="Tokenization: query text broken into SQL tokens"
 					class="blog-image"
 				/>
-				<div class="code-label">Go</div>
-				<pre class="code-block">func (p *SQLParser) tokenize(query string) []string {'{'}
-    query = strings.ReplaceAll(query, "(", " ( ")
-    query = strings.ReplaceAll(query, ")", " ) ")
-    query = strings.ReplaceAll(query, ",", " , ")
-    query = strings.TrimSuffix(query, ";")
-    return strings.Fields(query)
-{'}'}</pre>
 			</section>
 
 			<section>
-				<h2>2. Parsing the SELECT Statement</h2>
+				<h2>2. Parsing</h2>
 				<p>
-					Next, the parser walks through the token array and identifies the key components of the
-					query:
+					The parser validates <code>SELECT</code>, extracts columns and table name, then parses optional
+					clauses like <code>WHERE</code>, <code>JOIN</code>, <code>GROUP BY</code>, <code>ORDER BY</code>,
+					and <code>LIMIT</code>.
 				</p>
-				<ul>
-					<li>
-						<strong>SELECT</strong> — Must be the first token, otherwise the parser throws an error
-					</li>
-					<li>
-						<strong>Columns</strong> — Everything between SELECT and FROM (supports <code>*</code> or
-						a comma-separated list)
-					</li>
-					<li>
-						<strong>FROM</strong> — Required keyword that separates columns from the table name
-					</li>
-					<li><strong>Table name</strong> — The token immediately after FROM</li>
-					<li><strong>WHERE</strong> — Optional condition clause, parsed next if present</li>
-					<li><strong>LIMIT</strong> — Optional row limit, parsed last if present</li>
-				</ul>
-				<div class="code-label">Go</div>
-				<pre
-					class="code-block">func (p *SQLParser) parseSelect(tokens []string) (*SelectQuery, error) {'{'}
-    if strings.ToUpper(tokens[0]) != "SELECT" {'{'}
-        return nil, fmt.Errorf("query must start with SELECT")
-    {'}'}
+				<div class="code-label">TypeScript</div>
+				<pre class="code-block">const parser = new SQLParser(tables);
+const ast = parser.parse("SELECT state, pop FROM table WHERE pop &gt; 5000");
 
-    // Find FROM index
-    fromIndex := -1
-    for i, token := range tokens {'{'}
-        if strings.ToUpper(token) == "FROM" {'{'}
-            fromIndex = i
-            break
-        {'}'}
-    {'}'}
-    if fromIndex == -1 {'{'}
-        return nil, fmt.Errorf("expected FROM clause")
-    {'}'}
-
-    // Parse columns between SELECT and FROM
-    columns := p.parseColumns(tokens, 1, fromIndex)
-    table := tokens[fromIndex + 1]
-
-    // ... parse optional WHERE and LIMIT clauses
-{'}'}</pre>
+// AST (simplified)
+// {'{'} type: "SELECT", columns: ["state", "pop"], table: "table", where: ... {'}'}</pre>
 			</section>
 
 			<section>
-				<h2>3. Parsing WHERE Conditions</h2>
+				<h2>3. Recursive WHERE Parsing</h2>
 				<p>
-					If a WHERE keyword is found, the parser uses <strong>recursive descent parsing</strong> to build
-					a tree of conditions. Three functions call each other to handle operator precedence:
+					WHERE clauses are parsed with recursive descent so precedence is correct:
+					<code>OR</code> (lowest), then <code>AND</code>, then comparison expressions.
 				</p>
-				<ul>
-					<li>
-						<strong>parseConditionRecursive</strong> — handles <code>OR</code> (lowest precedence, evaluated
-						last)
-					</li>
-					<li><strong>parseAnd</strong> — handles <code>AND</code> (higher precedence)</li>
-					<li>
-						<strong>parseOperand</strong> — handles comparisons (<code>=</code>, <code>!=</code>,
-						<code>&lt;</code>, <code>&gt;</code>) and parenthesized groups (highest precedence)
-					</li>
-				</ul>
-				<pre class="code-block">pop > 3000 OR (region = 'West' AND pop > 500)
-// Parsed as: OR(
-//   pop > 3000,
-//   AND(region = 'West', pop > 500)
-// )</pre>
-				<div class="code-label">Go</div>
-				<pre class="code-block">// Parse OR (lowest precedence)
-func (p *SQLParser) parseConditionRecursive(tokens []string, idx int) (*Condition, int, error) {'{'}
-    left, nextIdx, err := p.parseAnd(tokens, idx)
-    if err != nil {'{'}
-        return nil, 0, err
-    {'}'}
-    for nextIdx &lt; len(tokens) &amp;&amp; strings.ToUpper(tokens[nextIdx]) == "OR" {'{'}
-        right, afterRight, err := p.parseAnd(tokens, nextIdx+1)
-        if err != nil {'{'}
-            return nil, 0, err
-        {'}'}
-        left = &amp;Condition{'{'}Left: left, Operator: "OR", Right: right{'}'}
-        nextIdx = afterRight
-    {'}'}
-    return left, nextIdx, nil
-{'}'}
-
-// Parse AND (higher precedence)
-func (p *SQLParser) parseAnd(tokens []string, idx int) (*Condition, int, error) {'{'}
-    left, nextIdx, err := p.parseOperand(tokens, idx)
-    if err != nil {'{'}
-        return nil, 0, err
-    {'}'}
-    for nextIdx &lt; len(tokens) &amp;&amp; strings.ToUpper(tokens[nextIdx]) == "AND" {'{'}
-        right, afterRight, err := p.parseOperand(tokens, nextIdx+1)
-        if err != nil {'{'}
-            return nil, 0, err
-        {'}'}
-        left = &amp;Condition{'{'}Left: left, Operator: "AND", Right: right{'}'}
-        nextIdx = afterRight
-    {'}'}
-    return left, nextIdx, nil
-{'}'}</pre>
-			</section>
-
-			<section>
-				<h2>4. The AST — What Parsing Produces</h2>
-				<p>
-					The output of steps 2 and 3 is an <strong>Abstract Syntax Tree</strong> (AST) — a tree-shaped
-					data structure that represents the query's structure. Instead of a flat string, the parser has
-					now produced a tree of nested objects that the executor can walk through.
-				</p>
-				<p>A flat SQL string like this:</p>
-				<pre
-					class="code-block">SELECT state, pop FROM table WHERE pop > 5000 AND region = 'West'</pre>
-				<p>Has been transformed into this structured tree:</p>
-				<pre class="code-block">SelectQuery
-├── type: "SELECT"
-├── columns: ["state", "pop"]
-├── table: "table"
-└── where:
-          AND
-         /   \
-        /     \
-    pop>5000   region='West'</pre>
-				<p>
-					<strong>Why a tree?</strong> Because it captures nesting and precedence. Consider the
-					expression
-					<code>A OR B AND C</code>. This means <code>A OR (B AND C)</code>, not
-					<code>(A OR B) AND C</code>. The tree naturally encodes this:
-				</p>
-				<pre class="code-block">      OR
-     /  \
-    A   AND
-       /   \
-      B     C</pre>
-				<p>
-					<code>AND</code> is deeper in the tree, so it gets evaluated first. The executor walks the tree
-					bottom-up — it evaluates the leaf nodes, then combines results as it moves back up to the root.
-				</p>
-				<p>
-					In Go, each node is a <code>Condition</code> struct where <code>Left</code> and
-					<code>Right</code>
-					can themselves be <code>*Condition</code> pointers. That recursion is what makes it a tree:
-				</p>
-				<div class="code-label">Go</div>
-				<pre class="code-block">type Condition struct {'{'}
-    Left     interface{'{'}{'}'} // string or *Condition
-    Operator Operator
-    Right    interface{'{'}{'}'} // string, float64, or *Condition
+				<pre class="code-block">private parseConditionRecursive(tokens: string[], idx: number) {'{'}
+  let [left, next] = this.parseAnd(tokens, idx);
+  while (tokens[next]?.toUpperCase() === "OR") {'{'}
+    const [right, afterRight] = this.parseAnd(tokens, next + 1);
+    left = {'{'} left, operator: "OR", right {'}'};
+    next = afterRight;
+  {'}'}
+  return [left, next] as const;
 {'}'}</pre>
 				<img
 					src="/ast.png"
-					alt="Abstract syntax tree: expressions are parsed into a tree structure with operators and operands"
+					alt="Abstract syntax tree of SQL conditions"
 					class="blog-image"
 				/>
 			</section>
 
 			<section>
-				<h2>5. Execution</h2>
+				<h2>4. Execution</h2>
 				<p>
-					Now the executor takes the AST and runs it against the JSON data. It performs three
-					operations in order:
+					Execution runs in predictable steps: filter rows, project selected columns, apply ordering and
+					limit, then return the result set.
 				</p>
-				<ol>
-					<li>
-						<strong>Filter</strong> — Apply WHERE conditions row by row, keeping only matching rows
-					</li>
-					<li>
-						<strong>Project</strong> — Select only the requested columns (or keep all columns with
-						<code>*</code>)
-					</li>
-					<li><strong>Limit</strong> — Truncate results to the specified number of rows</li>
-				</ol>
-				<div class="code-label">Go</div>
-				<pre class="code-block">func (p *SQLParser) Execute(query *SelectQuery) ([]Row, error) {'{'}
-    results := make([]Row, len(p.data))
-    copy(results, p.data)
-
-    // 1. Filter — apply WHERE conditions
-    if query.Where != nil {'{'}
-        filtered := []Row{'{'}{'}'}
-        for _, row := range results {'{'}
-            if p.evaluateCondition(row, query.Where) {'{'}
-                filtered = append(filtered, row)
-            {'}'}
-        {'}'}
-        results = filtered
-    {'}'}
-
-    // 2. Project — select only requested columns
-    if len(query.Columns) > 0 &amp;&amp; query.Columns[0] != "*" {'{'}
-        for i, row := range results {'{'}
-            newRow := make(Row)
-            for _, col := range query.Columns {'{'}
-                if val, ok := row[col]; ok {'{'}
-                    newRow[col] = val
-                {'}'}
-            {'}'}
-            results[i] = newRow
-        {'}'}
-    {'}'}
-
-    // 3. Limit — truncate results
-    if query.Limit != nil {'{'}
-        limit := *query.Limit
-        if limit &lt; len(results) {'{'}
-            results = results[:limit]
-        {'}'}
-    {'}'}
-
-    return results, nil
-{'}'}</pre>
-			</section>
-
-			<section>
-				<h2>6. Condition Evaluation</h2>
-				<p>
-					During the filter step, each row is tested against the WHERE condition tree. The executor
-					walks the AST recursively:
-				</p>
-				<ul>
-					<li>
-						If the node is <code>AND</code> or <code>OR</code> — evaluate both child nodes, combine
-						with <code>&amp;&amp;</code> or <code>||</code>
-					</li>
-					<li>
-						If the node is a comparison (<code>=</code>, <code>!=</code>, <code>&lt;</code>,
-						<code>&gt;</code>) — look up the column value from the row and compare
-					</li>
-					<li>String literals (in single quotes) are extracted as strings</li>
-					<li>Numeric values are parsed automatically</li>
-					<li>Column-to-column comparisons are also supported</li>
-				</ul>
-				<div class="code-label">Go</div>
-				<pre
-					class="code-block">func (p *SQLParser) evaluateCondition(row Row, cond *Condition) bool {'{'}
-    // Handle logical operators (AND, OR)
-    if cond.Operator == "AND" || cond.Operator == "OR" {'{'}
-        left := p.evaluateCondition(row, cond.Left.(*Condition))
-        right := p.evaluateCondition(row, cond.Right.(*Condition))
-        if cond.Operator == "AND" {'{'}
-            return left &amp;&amp; right
-        {'}'}
-        return left || right
-    {'}'}
-
-    // Handle comparison operators (=, !=, &lt;, >)
-    leftVal := p.resolveValue(row, cond.Left)
-    rightVal := p.resolveValue(row, cond.Right)
-
-    switch cond.Operator {'{'}
-    case "=":
-        return leftVal == rightVal
-    case "!=":
-        return leftVal != rightVal
-    case "&lt;":
-        return leftVal &lt; rightVal
-    case ">":
-        return leftVal > rightVal
-    {'}'}
-    return false
-{'}'}</pre>
-				<p>
-					The result bubbles back up the tree: each leaf returns <code>true</code> or
-					<code>false</code>, and the logical operators combine them until the root node produces a
-					final boolean for that row.
-				</p>
-			</section>
-
-			<section>
-				<h2>Example Walkthrough</h2>
-				<p>Let's trace through a complete query to see all six steps in action:</p>
-				<pre class="code-block">SELECT state, pop FROM table WHERE pop > 5000</pre>
-				<p><strong>Step 1 — Tokenize:</strong></p>
-				<pre
-					class="code-block">["SELECT", "state", ",", "pop", "FROM", "table", "WHERE", "pop", ">", "5000"]</pre>
-				<p><strong>Step 2 — Parse SELECT:</strong></p>
-				<pre class="code-block">columns: ["state", "pop"]
-table: "table"</pre>
-				<p><strong>Step 3 — Parse WHERE:</strong></p>
-				<pre class="code-block">{'{'}
-  left: "pop",
-  operator: ">",
-  right: 5000
-{'}'}</pre>
-				<p><strong>Step 4 — AST complete:</strong></p>
-				<pre class="code-block">{'{'}
-  type: "SELECT",
-  columns: ["state", "pop"],
-  table: "table",
-  where: {'{'} left: "pop", operator: ">", right: 5000 {'}'}
-{'}'}</pre>
-				<p><strong>Step 5 — Execute:</strong></p>
-				<p>
-					For each row, check if <code>pop > 5000</code>. Keep matching rows, then select only the
-					<code>state</code>
-					and <code>pop</code> columns.
-				</p>
+				<div class="code-label">TypeScript</div>
+				<pre class="code-block">const rows = parser.execute(ast);
+// 1) WHERE filters rows
+// 2) SELECT projects columns
+// 3) ORDER BY / LIMIT finalize output</pre>
 			</section>
 
 			<section>
 				<h2>Supported Features</h2>
-				<p>This parser supports a comprehensive subset of SQL:</p>
 				<ul>
-					<li>✓ SELECT queries with column selection (* or specific columns)</li>
-					<li>✓ WHERE with AND, OR, parentheses</li>
-					<li>✓ Comparison operators: =, !=, &lt;, &gt;, &lt;=, &gt;=</li>
-					<li>✓ LIKE / NOT LIKE with % and _ wildcards</li>
-					<li>✓ IN / NOT IN with value lists</li>
-					<li>✓ Subqueries: WHERE col IN (SELECT ...)</li>
-					<li>✓ IS NULL / IS NOT NULL</li>
-					<li>✓ JOINs: INNER JOIN, LEFT JOIN, RIGHT JOIN with ON</li>
-					<li>✓ GROUP BY with HAVING</li>
-					<li>✓ Aggregations: COUNT, SUM, AVG, MIN, MAX</li>
-					<li>✓ ORDER BY (ASC / DESC)</li>
-					<li>✓ LIMIT clause</li>
-					<li>✓ Nested object access via dot notation (e.g. address.city)</li>
-					<li>✓ Multi-word string literals (e.g. 'New York')</li>
-					<li>✓ Column-to-column comparisons</li>
-				</ul>
-				<p>
-					It does <strong>not</strong> support:
-				</p>
-				<ul>
-					<li>✗ INSERT, UPDATE, DELETE statements</li>
-					<li>✗ UNION / INTERSECT</li>
-					<li>✗ SELECT DISTINCT</li>
-					<li>✗ Arithmetic expressions (e.g. price * quantity)</li>
-					<li>✗ String functions (UPPER, LOWER, CONCAT, etc.)</li>
-					<li>✗ BETWEEN operator</li>
-					<li>✗ Escaped quotes in string literals</li>
+					<li>SELECT with specific columns or *</li>
+					<li>WHERE with AND, OR, and parentheses</li>
+					<li>Comparison operators, LIKE, IN, and NULL checks</li>
+					<li>JOINs, GROUP BY, HAVING, ORDER BY, and LIMIT</li>
+					<li>Aggregations: COUNT, SUM, AVG, MIN, MAX</li>
+					<li>Nested object access via dot notation</li>
 				</ul>
 			</section>
 		</article>
@@ -431,10 +135,12 @@ table: "table"</pre>
 
 <style>
 	.back-button {
+		display: inline-block;
 		padding: 0.5rem 1rem;
 		background: #fafafa;
 		color: black;
 		border: 1px solid black;
+		text-decoration: none;
 		border-radius: 0;
 		font-size: 12px;
 		font-weight: 400;
