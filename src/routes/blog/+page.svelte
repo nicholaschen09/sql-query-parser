@@ -6,8 +6,9 @@
 
 		<article class="blog-content">
 			<p class="intro">
-				This project uses a <strong>TypeScript-only</strong> SQL parser that transforms SQL queries into
-				executable operations on JSON data directly in the browser.
+				This app uses a <strong>TypeScript-only</strong> SQL parser. Queries are parsed and executed in the
+				browser against JSON tables, so the whole flow is deterministic, inspectable, and fast for local
+				datasets.
 			</p>
 			<img
 				src="/sql-string.png"
@@ -18,36 +19,53 @@
 			<section>
 				<h2>Architecture Overview</h2>
 				<p>
-					The parser follows a three-stage pipeline: <strong>tokenization</strong>, <strong>parsing</strong>,
-					and <strong>execution</strong>. SQL text goes in, an AST is produced, and filtered/projected rows
-					come out.
+					The parser is split into three stages: tokenization, parsing, and execution. The parser converts a
+					SQL string into an AST (<code>SelectQuery</code>), then the executor applies clauses in SQL order.
 				</p>
 				<img
 					src="/parser.png"
 					alt="Parser architecture: SQL input flows through tokenization, parsing, and execution"
 					class="blog-image"
 				/>
-				<div class="code-label">TypeScript</div>
-				<pre class="code-block">class SQLParser {'{'}
-  constructor(private tables: Record&lt;string, Row[]&gt;) {'{'}{'}'}
-  parse(query: string): SelectQuery {'{'} ... {'}'}
-  execute(ast: SelectQuery): Row[] {'{'} ... {'}'}
-{'}'}</pre>
+				<h3>End-to-End Flow</h3>
+				<ol>
+					<li>Read query string and convert it to token list.</li>
+					<li>Parse tokens into a typed query object.</li>
+					<li>Load base table rows.</li>
+					<li>Apply JOINs, WHERE, GROUP BY/HAVING, projection, ORDER BY, and LIMIT.</li>
+					<li>Return final rows for rendering/export.</li>
+				</ol>
+				<div class="code-label">TypeScript API</div>
+				<pre class="code-block">const parser = new SQLParser(tables);
+const ast = parser.parse(sql);
+const rows = parser.execute(ast);</pre>
 			</section>
 
 			<section>
 				<h2>1. Tokenization</h2>
 				<p>
-					Tokenization normalizes punctuation, splits by whitespace, and removes trailing semicolons.
+					Tokenization scans character-by-character. It preserves quoted string literals, recognizes two-char
+					operators (<code>&gt;=</code>, <code>&lt;=</code>, <code>!=</code>), and emits punctuation tokens
+					(<code>(</code>, <code>)</code>, <code>,</code>, <code>=</code>, <code>&lt;</code>,
+					<code>&gt;</code>, <code>*</code>).
 				</p>
-				<pre class="code-block">private tokenize(query: string): string[] {'{'}
-  return query
-    .replace(/[(),]/g, (m) =&gt; ` ${'{'}m{'}'} `)
-    .replace(/;$/, '')
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
-{'}'}</pre>
+				<h3>Important Behavior</h3>
+				<ul>
+					<li>Single quotes are treated as string delimiters and may contain spaces.</li>
+					<li>Trailing semicolon is ignored.</li>
+					<li>Dotted identifiers like <code>users.id</code> are kept as one token.</li>
+					<li>Whitespace is fully normalized during scanning.</li>
+				</ul>
+				<div class="code-label">Tokenizer Example</div>
+				<pre class="code-block">SELECT users.name, SUM(orders.amount) AS total
+FROM users
+LEFT JOIN orders ON users.id = orders.user_id
+WHERE users.name LIKE 'A%'
+GROUP BY users.name
+HAVING total &gt;= 100
+ORDER BY total DESC
+LIMIT 5;</pre>
+				<p>Becomes a token stream consumed by the parser in a single left-to-right pass.</p>
 				<img
 					src="/tokenization.png"
 					alt="Tokenization: query text broken into SQL tokens"
@@ -56,35 +74,62 @@
 			</section>
 
 			<section>
-				<h2>2. Parsing</h2>
+				<h2>2. Parsing Into an AST</h2>
 				<p>
-					The parser validates <code>SELECT</code>, extracts columns and table name, then parses optional
-					clauses like <code>WHERE</code>, <code>JOIN</code>, <code>GROUP BY</code>, <code>ORDER BY</code>,
-					and <code>LIMIT</code>.
+					The parser validates that queries start with <code>SELECT</code>, finds the top-level
+					<code>FROM</code> boundary (while skipping nested parentheses), and then parses optional clauses in
+					order:
 				</p>
-				<div class="code-label">TypeScript</div>
-				<pre class="code-block">const parser = new SQLParser(tables);
-const ast = parser.parse("SELECT state, pop FROM table WHERE pop &gt; 5000");
-
-// AST (simplified)
-// {'{'} type: "SELECT", columns: ["state", "pop"], table: "table", where: ... {'}'}</pre>
+				<ol>
+					<li><code>JOIN</code> blocks (<code>INNER</code>, <code>LEFT</code>, <code>RIGHT</code>)</li>
+					<li><code>WHERE</code></li>
+					<li><code>GROUP BY</code></li>
+					<li><code>HAVING</code></li>
+					<li><code>ORDER BY</code></li>
+					<li><code>LIMIT</code></li>
+				</ol>
+				<h3>Column Parsing</h3>
+				<p>
+					Column expressions are either plain column names or aggregate expressions such as
+					<code>COUNT(*)</code>, <code>SUM(amount)</code>, and optional aliases via <code>AS</code>.
+				</p>
+				<div class="code-label">AST Shape (Simplified)</div>
+				<pre class="code-block">{'{'}
+  type: "SELECT",
+  table: "users",
+  columns: ["users.name", {'{'} func: "SUM", column: "orders.amount", alias: "total" {'}'}],
+  joins: [...],
+  where: ...,
+  groupBy: ["users.name"],
+  having: ...,
+  orderBy: [{'{'} column: "total", direction: "DESC" {'}'}],
+  limit: 5
+{'}'}</pre>
 			</section>
 
 			<section>
-				<h2>3. Recursive WHERE Parsing</h2>
+				<h2>3. Condition Parsing and Precedence</h2>
 				<p>
-					WHERE clauses are parsed with recursive descent so precedence is correct:
-					<code>OR</code> (lowest), then <code>AND</code>, then comparison expressions.
+					Conditions use recursive descent with explicit precedence levels:
+					<code>OR</code> (lowest), then <code>AND</code>, then comparison operands (highest).
 				</p>
-				<pre class="code-block">private parseConditionRecursive(tokens: string[], idx: number) {'{'}
-  let [left, next] = this.parseAnd(tokens, idx);
-  while (tokens[next]?.toUpperCase() === "OR") {'{'}
-    const [right, afterRight] = this.parseAnd(tokens, next + 1);
-    left = {'{'} left, operator: "OR", right {'}'};
-    next = afterRight;
-  {'}'}
-  return [left, next] as const;
-{'}'}</pre>
+				<h3>Supported Condition Operators</h3>
+				<ul>
+					<li>Comparisons: <code>=</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code></li>
+					<li><code>IS NULL</code> and <code>IS NOT NULL</code></li>
+					<li><code>LIKE</code> and <code>NOT LIKE</code> (<code>%</code> and <code>_</code> wildcards)</li>
+					<li><code>IN (...)</code>, <code>NOT IN (...)</code>, and subquery forms</li>
+					<li>Parenthesized boolean expressions</li>
+				</ul>
+				<div class="code-label">Precedence Example</div>
+				<pre class="code-block">WHERE A OR B AND C
+
+Equivalent AST:
+OR
+|- A
+`- AND
+   |- B
+   `- C</pre>
 				<img
 					src="/ast.png"
 					alt="Abstract syntax tree of SQL conditions"
@@ -93,28 +138,142 @@ const ast = parser.parse("SELECT state, pop FROM table WHERE pop &gt; 5000");
 			</section>
 
 			<section>
-				<h2>4. Execution</h2>
+				<h2>4. Execution Pipeline</h2>
 				<p>
-					Execution runs in predictable steps: filter rows, project selected columns, apply ordering and
-					limit, then return the result set.
+					Execution is implemented as a stable sequence. Each step transforms an in-memory row array and
+					passes it to the next stage.
 				</p>
-				<div class="code-label">TypeScript</div>
-				<pre class="code-block">const rows = parser.execute(ast);
-// 1) WHERE filters rows
-// 2) SELECT projects columns
-// 3) ORDER BY / LIMIT finalize output</pre>
+				<h3>Clause Order During Execution</h3>
+				<ol>
+					<li>Load base table rows.</li>
+					<li>Apply JOINs.</li>
+					<li>Apply WHERE filtering.</li>
+					<li>Apply GROUP BY and aggregations (if present).</li>
+					<li>Project columns (when not grouped).</li>
+					<li>Apply HAVING to grouped results.</li>
+					<li>Apply ORDER BY sort keys.</li>
+					<li>Apply LIMIT slicing.</li>
+				</ol>
+				<div class="code-label">Execution Skeleton</div>
+				<pre class="code-block">let rows = baseTable;
+rows = join(rows);
+rows = where(rows);
+rows = groupAndAggregate(rows);
+rows = project(rows);
+rows = order(rows);
+rows = limit(rows);</pre>
 			</section>
 
 			<section>
-				<h2>Supported Features</h2>
+				<h2>5. JOIN Semantics</h2>
+				<p>
+					JOIN execution uses nested iteration over left and right row sets. Merged rows include both plain
+					keys and table-qualified keys like <code>users.id</code> and <code>orders.id</code> for disambiguation.
+				</p>
 				<ul>
-					<li>SELECT with specific columns or *</li>
-					<li>WHERE with AND, OR, and parentheses</li>
-					<li>Comparison operators, LIKE, IN, and NULL checks</li>
-					<li>JOINs, GROUP BY, HAVING, ORDER BY, and LIMIT</li>
-					<li>Aggregations: COUNT, SUM, AVG, MIN, MAX</li>
-					<li>Nested object access via dot notation</li>
+					<li><strong>INNER JOIN</strong>: keep matched pairs only.</li>
+					<li><strong>LEFT JOIN</strong>: keep all left rows; unmatched right fields become <code>null</code>.</li>
+					<li><strong>RIGHT JOIN</strong>: keep all right rows; unmatched left fields become <code>null</code>.</li>
 				</ul>
+				<p>
+					The <code>ON</code> clause is evaluated using the same condition engine as <code>WHERE</code>, so
+					column-to-column comparisons and null semantics remain consistent.
+				</p>
+			</section>
+
+			<section>
+				<h2>6. GROUP BY, Aggregates, and HAVING</h2>
+				<p>
+					Grouping builds a hash map from group key to row bucket. Aggregate functions are then computed per
+					bucket.
+				</p>
+				<h3>Built-in Aggregate Functions</h3>
+				<ul>
+					<li><code>COUNT(*)</code> and <code>COUNT(column)</code></li>
+					<li><code>SUM(column)</code></li>
+					<li><code>AVG(column)</code></li>
+					<li><code>MIN(column)</code></li>
+					<li><code>MAX(column)</code></li>
+				</ul>
+				<div class="code-label">Grouped Query Example</div>
+				<pre class="code-block">SELECT user_id, SUM(amount) AS total
+FROM orders
+GROUP BY user_id
+HAVING total &gt; 100
+ORDER BY total DESC;</pre>
+				<p>
+					If a query contains aggregate columns but no explicit <code>GROUP BY</code>, execution treats the
+					entire input as a single implicit group.
+				</p>
+			</section>
+
+			<section>
+				<h2>7. Value Resolution and Dot Notation</h2>
+				<p>
+					Value lookup follows a fallback strategy to support both flat and nested data:
+				</p>
+				<ol>
+					<li>Try exact key match (<code>row[path]</code>).</li>
+					<li>For dotted paths, try progressive prefix keys (useful for JOIN aliases).</li>
+					<li>If needed, traverse nested objects part-by-part.</li>
+				</ol>
+				<div class="code-label">Examples</div>
+				<pre class="code-block">address.city         // nested object traversal
+users.id             // table-qualified join key
+orders.amount        // table-qualified numeric value</pre>
+			</section>
+
+			<section>
+				<h2>8. Type Handling Rules</h2>
+				<p>
+					Comparisons support mixed string/number inputs with numeric coercion when both sides parse
+					cleanly as numbers. Null behavior is explicit:
+				</p>
+				<ul>
+					<li><code>IS NULL</code> and <code>IS NOT NULL</code> use strict null/undefined checks.</li>
+					<li>For <code>=</code> and <code>!=</code>, null compares directly.</li>
+					<li>For range operators with null, result is false.</li>
+				</ul>
+				<p>
+					<code>LIKE</code> patterns are converted to regex using SQL-style wildcards:
+					<code>%</code> for zero-or-more chars and <code>_</code> for one char.
+				</p>
+			</section>
+
+			<section>
+				<h2>9. Supported and Unsupported SQL</h2>
+				<h3>Supported</h3>
+				<ul>
+					<li><code>SELECT</code> with explicit columns or <code>*</code></li>
+					<li><code>WHERE</code> with nested boolean expressions</li>
+					<li><code>JOIN</code>: INNER, LEFT, RIGHT with <code>ON</code></li>
+					<li><code>GROUP BY</code>, <code>HAVING</code>, and aggregates</li>
+					<li><code>ORDER BY</code> and <code>LIMIT</code></li>
+					<li><code>IN</code>/<code>NOT IN</code> with value lists and subqueries</li>
+				</ul>
+				<h3>Not Implemented</h3>
+				<ul>
+					<li><code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code></li>
+					<li><code>UNION</code>, <code>INTERSECT</code>, window functions</li>
+					<li>Expression arithmetic like <code>price * qty</code> in SELECT</li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>10. Performance Notes</h2>
+				<p>
+					This parser is optimized for clarity and correctness on local JSON data. Approximate complexity:
+				</p>
+				<ul>
+					<li>Tokenization/parsing: linear in query length.</li>
+					<li>Filtering: linear in row count.</li>
+					<li>Sorting: <code>O(n log n)</code>.</li>
+					<li>JOINs: nested-loop by default, roughly <code>O(n*m)</code>.</li>
+					<li>Grouping: linear pass plus per-group aggregate work.</li>
+				</ul>
+				<p>
+					For very large datasets, indexing and hash-join strategies would be the next optimization step.
+				</p>
 			</section>
 		</article>
 	</main>
