@@ -318,7 +318,7 @@
 
 <div class="page-wrapper">
 	<main class="container">
-		<h1>SQL Query Parser</h1>
+		<h1>SQL Query</h1>
 		<div class="header-links">
 			<a href="/blog" class="blog-link">How it works</a><a
 				href="https://github.com/nicholaschen09/sql-query-parser"
@@ -462,7 +462,6 @@
 				{/each}
 			</div>
 			<h2>SQL Query</h2>
-			<p style="margin-bottom: 0.5rem;">Parser: TypeScript (Client-side)</p>
 			<textarea
 				bind:value={query}
 				placeholder="Enter your SQL query here..."

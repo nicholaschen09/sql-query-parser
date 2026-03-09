@@ -330,11 +330,11 @@ tr:nth-child(even) td {
 
 .upload-zone {
 	border: 1px dashed black;
-	padding: 2rem;
+	padding: 1.25rem;
 	text-align: center;
 	background: #fafafa;
 	cursor: pointer;
-	min-height: 250px;
+	min-height: 120px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -387,7 +387,7 @@ tr:nth-child(even) td {
 	font-size: 11px;
 	font-weight: 600;
 	margin: 1rem 0;
-	max-height: 300px;
+	max-height: 140px;
 	padding: 0.5rem;
 	background: #fafafa;
 	color: black;
